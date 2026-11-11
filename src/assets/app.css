@@ -21,7 +21,7 @@
   --sidebar-width: 270px;
   --note-font-size: 16px;
   --content-width: 760px;
-  --toc-width: 240px;
+  --toc-width: 312px;
   --layout-gap: clamp(20px, 3vw, 44px);
   --layout-pad: clamp(16px, 4vw, 44px);
   --toolbar-size: 30px;

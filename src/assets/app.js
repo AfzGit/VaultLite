@@ -224,7 +224,7 @@
 
   /* Right sidebar width and level-1-only mode ------------------------------- */
 
-  let tocWidth = clamp(Number(store.get('toc-width')) || 240, 160, 520);
+  let tocWidth = clamp(Number(store.get('toc-width')) || 312, 160, 520);
   const setTocWidth = value => {
     tocWidth = clamp(value, 160, 520);
     root.style.setProperty('--toc-width', tocWidth + 'px');
@@ -610,25 +610,34 @@
       });
     }, { passive: true });
 
-    toc.addEventListener('click', event => {
-      const toggle = event.target.closest('[data-toc-toggle]');
-      if (toggle) {
+    // Bind each arrow directly instead of relying on delegation. Clicks can
+    // land on the SVG/Use child inside the button, and direct bindings keep the
+    // expand action reliable in every browser.
+    entries.forEach(entry => {
+      const toggle = entry.querySelector('[data-toc-toggle]');
+      if (!toggle) return;
+      toggle.addEventListener('click', event => {
         event.preventDefault();
-        const entry = toggle.closest('.toc-entry');
-        const id = entry && entry.dataset.id;
+        event.stopPropagation();
+        const id = entry.dataset.id;
         if (!id) return;
         if (collapsed.has(id)) collapsed.delete(id);
         else collapsed.add(id);
         applyCollapsed();
         updateActiveFromScroll();
-        return;
-      }
+      });
+    });
+
+    toc.addEventListener('click', event => {
       const link = event.target.closest('.toc-link');
       if (!link) return;
       event.preventDefault();
       const raw = (link.getAttribute('href') || '').slice(1);
       if (!raw) return;
       const id = decodeURIComponent(raw);
+      // Navigating to a heading also opens its outline section, so its
+      // subheadings are visible in the right sidebar.
+      if (collapsed.delete(id)) applyCollapsed();
       if (history.replaceState) history.replaceState(null, '', '#' + raw);
       setActive(id);
       stabilize(id);

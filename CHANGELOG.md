@@ -15,6 +15,9 @@
 - Make canvas zoom keep the point beneath the cursor fixed.
 - Add a palette command to toggle justified paragraph text.
 - Add `ARCHITECTURE.md` documenting the server, rendering pipeline, front-end modules, workflows, and implementation quirks.
+- Expand a heading's outline section when the heading itself is clicked.
+- Fix outline arrows so collapsed sections reliably expand again, including clicks on the arrow icon.
+- Swap the arrow icons on the right-sidebar width buttons and widen the sidebar's default width by 30%.
 - Add palette commands to copy the current note, open it in Obsidian, open the VaultLite config folder, and exit VaultLite while stopping the server.
 - Add a configurable command palette (`Ctrl+P`) and file search shortcut (`Ctrl+O`).
 - Add editable keyboard bindings in `commands.conf`, with `Alt+Z` for the left sidebar and `Alt+X` for the right sidebar by default.
