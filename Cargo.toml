@@ -1,0 +1,29 @@
+[package]
+name = "vaultlite"
+version = "0.8.9"
+edition = "2021"
+rust-version = "1.87"
+description = "A tiny local web browser for Obsidian vaults"
+license = "MIT"
+
+[dependencies]
+tiny_http = "0.12"
+pulldown-cmark = "0.12"
+percent-encoding = "2"
+regex = "1"
+serde_yaml = "0.9"
+# Keep the native launcher lean: OpenGL renderer only, without optional
+# Wayland/web-screen-reader/persistence integrations. Eframe 0.30 is pinned
+# to keep its dependency graph compatible with Rust 1.87.
+eframe = { version = "=0.30.0", default-features = false, features = ["default_fonts", "glow", "x11"] }
+# Tiny native OS folder picker; avoids the larger async portal/UI dependency stack.
+tinyfiledialogs = "=3.9.1"
+
+[profile.release]
+strip = true
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.59.0", features = ["Win32_System_Console"] }

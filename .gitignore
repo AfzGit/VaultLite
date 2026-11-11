@@ -1,0 +1,33 @@
+# Build artifacts
+/target/
+/dist/
+
+# Cargo.lock is intentionally tracked: this is a binary crate and the lockfile
+# keeps Rust 1.87-compatible dependency resolution reproducible.
+
+# Rust compiler backups
+*.rs.bk
+
+# Logs and crash dumps
+*.log
+*.pdb
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Local scratch notes
+.cargo-config-note
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor and IDE state
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
