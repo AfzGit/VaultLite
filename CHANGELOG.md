@@ -18,6 +18,8 @@
 - Expand a heading's outline section when the heading itself is clicked.
 - Fix outline arrows so collapsed sections reliably expand again, including clicks on the arrow icon.
 - Swap the arrow icons on the right-sidebar width buttons and widen the sidebar's default width by 30%.
+- Give both sidebars the same default width, and keep the right-sidebar reopen button visible just left of the command palette button while the sidebar is hidden.
+- Rename the outline option to “Collapse all headings to level 1”. Collapsing a heading now cascades to its subtree so each expansion reveals only the next level, while all headings stay expanded by default.
 - Add palette commands to copy the current note, open it in Obsidian, open the VaultLite config folder, and exit VaultLite while stopping the server.
 - Add a configurable command palette (`Ctrl+P`) and file search shortcut (`Ctrl+O`).
 - Add editable keyboard bindings in `commands.conf`, with `Alt+Z` for the left sidebar and `Alt+X` for the right sidebar by default.

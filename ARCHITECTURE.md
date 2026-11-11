@@ -167,8 +167,10 @@ sections:
 1. **Storage and theme** — `store` wraps `localStorage` with a `vaultlite-`
    prefix. Theme (`dark` by default via `data-theme="dark"` in `page.html`),
    palette, sidebar widths, font size, wrapping, and justification are persisted.
-2. **Sidebars and TOC controls** — left/right sidebar visibility, right-sidebar
-   width (`--toc-width`, 160–520 px), and level-1-only mode.
+2. **Sidebars and TOC controls** — left/right sidebar visibility, left-sidebar
+   and right-sidebar widths (`--sidebar-width` 190–520 px / `--toc-width`
+   160–520 px, both defaulting to 312 px), the right-sidebar reopen button, and
+   the collapse-all-to-level-1 mode.
 3. **File tree and fuzzy search** — folders persist their state; search ranks
    filenames and paths (substring, subsequence, bounded typo distance). The
    command palette reuses `fuzzyScore`.
@@ -193,7 +195,11 @@ The TOC is rendered flat but each entry has `.toc-entry`, `data-level`,
 `data-id`, and a toggle button. `setupToc` is the single owner of outline state:
 
 - **Collapse** — the `collapsed` set hides entries deeper than a collapsed
-  heading. Arrow buttons reflect `aria-expanded` and rotate via CSS.
+  heading. Collapsing a heading cascades to its whole subtree; expanding it
+  deletes only that heading, so the next expansion reveals just the immediate
+  child level. “Collapse all headings to level 1” collapses every parent, and
+  turning it off clears the set so all headings are expanded again. Arrow
+  buttons reflect `aria-expanded` and rotate via CSS.
 - **Active heading** — on a throttled scroll handler, the last heading whose top
   passed the top 20% of the viewport is highlighted and marked
   `aria-current="location"`. Clicking a heading updates the highlight first.
@@ -216,7 +222,7 @@ is removed with the replaced content, so listeners do not accumulate.
 | `vaultlite-note-font-size` | Reading text size |
 | `vaultlite-justify` | Justified paragraph text |
 | `vaultlite-folder-state` | Open/closed folders |
-| `vaultlite-toc-level-one` | TOC level-1-only mode |
+| `vaultlite-toc-level-one` | TOC collapsed-to-level-1 mode |
 | `vaultlite-left-wrap`, `vaultlite-right-wrap` | Text wrapping modes |
 
 ## Command configuration

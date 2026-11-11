@@ -233,11 +233,13 @@
   setTocWidth(tocWidth);
 
   let tocLevelOne = store.get('toc-level-one') === '1';
+  // Assigned by setupToc, which owns the outline's collapsed state.
+  let applyTocLevelOneState = null;
   const syncTocControls = () => {
     document.querySelectorAll('.layout > aside').forEach(aside => aside.classList.toggle('toc-level-one', tocLevelOne));
     document.querySelectorAll('[data-toc-level-one]').forEach(button => {
       button.setAttribute('aria-pressed', String(tocLevelOne));
-      button.title = tocLevelOne ? 'Show all headings' : 'Show only level 1 headings';
+      button.title = tocLevelOne ? 'Expand all headings' : 'Collapse all headings to level 1';
       button.setAttribute('aria-label', button.title);
     });
   };
@@ -245,6 +247,7 @@
     tocLevelOne = !!value;
     store.set('toc-level-one', tocLevelOne ? '1' : '0');
     syncTocControls();
+    if (applyTocLevelOneState) applyTocLevelOneState();
   };
   syncTocControls();
 
@@ -460,7 +463,7 @@
   applyWrap('left', initialWrap('left', legacyLeftWrap));
   applyWrap('right', initialWrap('right', legacyRightWrap));
 
-  let sidebarWidth = clamp(Number(store.get('sidebar-width')) || 270, 190, 520);
+  let sidebarWidth = clamp(Number(store.get('sidebar-width')) || 312, 190, 520);
   const setSidebarWidth = value => {
     sidebarWidth = clamp(value, 190, 520);
     root.style.setProperty('--sidebar-width', sidebarWidth + 'px');
@@ -526,6 +529,20 @@
         }
         if (!hidden && collapsed.has(entry.dataset.id)) hiddenBelow = level;
       });
+    };
+
+    // Collapsing a heading also collapses its whole subtree. Re-expanding it
+    // then reveals only its immediate children, because the descendants are
+    // still collapsed and need their own expansion step.
+    const collapseSection = entry => {
+      const level = Number(entry.dataset.level) || 1;
+      const start = entries.indexOf(entry);
+      collapsed.add(entry.dataset.id);
+      for (let index = start + 1; index < entries.length; index++) {
+        const next = entries[index];
+        if ((Number(next.dataset.level) || 1) <= level) break;
+        collapsed.add(next.dataset.id);
+      }
     };
 
     let activeId = null;
@@ -622,7 +639,7 @@
         const id = entry.dataset.id;
         if (!id) return;
         if (collapsed.has(id)) collapsed.delete(id);
-        else collapsed.add(id);
+        else collapseSection(entry);
         applyCollapsed();
         updateActiveFromScroll();
       });
@@ -668,8 +685,19 @@
       stabilize(id);
     };
 
-    applyCollapsed();
-    updateActiveFromScroll();
+    applyTocLevelOneState = () => {
+      collapsed.clear();
+      if (tocLevelOne) {
+        entries.forEach(entry => {
+          const toggle = entry.querySelector('[data-toc-toggle]');
+          if (toggle && toggle.style.visibility !== 'hidden') collapsed.add(entry.dataset.id);
+        });
+      }
+      applyCollapsed();
+      updateActiveFromScroll();
+    };
+
+    applyTocLevelOneState();
     if (location.hash) {
       const id = decodeURIComponent(location.hash.slice(1));
       if (headingById.has(id)) requestAnimationFrame(() => scrollToHeading(id));
@@ -1190,7 +1218,7 @@
     { id: 'open-search', title: 'Search files', keywords: 'find quick open vault', run: openSearch },
     { id: 'toggle-left-sidebar', title: 'Toggle left sidebar', keywords: 'navigator files tree', run: () => leftSidebar.toggle() },
     { id: 'toggle-right-sidebar', title: 'Toggle right sidebar', keywords: 'table of contents toc outline', run: () => rightSidebar.toggle() },
-    { id: 'toggle-toc-level-one', title: 'Toggle level 1 headings only', keywords: 'table of contents toc outline collapse headings', run: () => setTocLevelOne(!tocLevelOne) },
+    { id: 'toggle-toc-level-one', title: 'Collapse all headings to level 1', keywords: 'table of contents toc outline collapse expand headings', run: () => setTocLevelOne(!tocLevelOne) },
     { id: 'toggle-theme', title: 'Toggle dark mode', keywords: 'theme light appearance', run: () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark') },
     { id: 'collapse-folders', title: 'Collapse all folders', keywords: 'tree navigator', run: collapseFolders },
     { id: 'expand-folders', title: 'Expand all folders', keywords: 'tree navigator', run: expandFolders },

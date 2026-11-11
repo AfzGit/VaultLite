@@ -18,7 +18,7 @@
   --h4-color: #607da8;
   --h5-color: #66788d;
   --h6-color: #77808b;
-  --sidebar-width: 270px;
+  --sidebar-width: 312px;
   --note-font-size: 16px;
   --content-width: 760px;
   --toc-width: 312px;
@@ -354,7 +354,7 @@ aside {
 .toc-heading b { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg); margin: 0; white-space: nowrap; }
 .toc-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px; }
 .toc-actions .icon-button { width: 24px; height: 24px; min-width: 24px; }
-aside.toc-level-one .toc-entry:not(.toc-level-1) { display: none; }
+
 #heading-search {
   width: 100%;
   padding: 5px 8px;
@@ -446,8 +446,6 @@ body.justify-text .note-embed-body p {
   backdrop-filter: blur(6px);
   box-shadow: 0 1px 4px #0001;
 }
-#show-right-sidebar { display: none; }
-html[data-right-hidden="true"] body.has-toc #show-right-sidebar { display: inline-grid; }
 .floating-toggle {
   position: fixed;
   z-index: 50;
