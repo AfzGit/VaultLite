@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>__TITLE__ · VaultLite</title>
+<style>
+__CSS__
+</style>
+</head>
+<body>
+<svg class="icon-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-panel-left-close" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path d="m16 9-3 3 3 3"/></symbol>
+  <symbol id="i-panel-right-close" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/><path d="m8 9 3 3-3 3"/></symbol>
+  <symbol id="i-panel-right" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></symbol>
+  <symbol id="i-collapse" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/><path d="m8 5 4 3 4-3M8 19l4-3 4 3"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/><path d="m8 8 4-3 4 3M8 16l4 3 4-3"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-wrap" viewBox="0 0 24 24"><path d="M4 6h16M4 12h11a3 3 0 0 1 0 6h-3"/><path d="m15 15-3 3 3 3M4 18h4"/></symbol>
+  <symbol id="i-levels" viewBox="0 0 24 24"><path d="M4 6h16M8 12h12M12 18h8"/></symbol>
+  <symbol id="i-type-minus" viewBox="0 0 24 24"><path d="M4 19 8 5l4 14M5.5 14h5M16 12h6"/></symbol>
+  <symbol id="i-type-plus" viewBox="0 0 24 24"><path d="M4 19 8 5l4 14M5.5 14h5M16 12h6M19 9v6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="7" cy="18" r="2"/></symbol>
+  <symbol id="i-command" viewBox="0 0 24 24"><path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-folder-open" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H3z"/><path d="M3 10h18l-2 8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m21 15-5-5L5 19"/></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></symbol>
+  <symbol id="i-canvas" viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/><path d="M11 7.5h2.5a3 3 0 0 1 3 3V13"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5.9 1.2.9 2h5.2c0-.8.3-1.5.9-2A6 6 0 0 0 12 3z"/></symbol>
+  <symbol id="i-quote" viewBox="0 0 24 24"><path d="M9 7H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h2v2a3 3 0 0 1-3 3M21 7h-4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h2v2a3 3 0 0 1-3 3"/></symbol>
+  <symbol id="i-bug" viewBox="0 0 24 24"><rect x="8" y="7" width="8" height="10" rx="4"/><path d="M8 11H4M20 11h-4M8 15H5M19 15h-3M9 7 7 5M15 7l2-2M9 17l-2 2M15 17l2 2"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v10h14V10"/></symbol>
+</svg>
+<script>
+(() => {
+  const root = document.documentElement;
+  const theme = localStorage.getItem('vaultlite-theme');
+  if (theme === 'dark' || theme === 'light') root.dataset.theme = theme;
+  const storedNav = localStorage.getItem('vaultlite-sidebar-hidden');
+  const mobile = window.matchMedia('(max-width: 760px)').matches;
+  // The mobile navigator is a drawer, so it always starts closed. Desktop
+  // keeps the user's persisted sidebar preference.
+  root.dataset.navHidden = String(mobile || storedNav === '1');
+  root.dataset.rightHidden = String(localStorage.getItem('vaultlite-right-sidebar-hidden') === '1');
+})();
+</script>
+<div class="app">
+<nav id="vault-sidebar" aria-label="File navigator">
+  <div class="nav-top">
+    <a class="brand" href="/">VaultLite</a>
+    <button class="icon-button" id="hide-sidebar" type="button" title="Hide left sidebar" aria-label="Hide left sidebar" data-command="toggle-left-sidebar"><svg class="icon" aria-hidden="true"><use href="#i-panel-left-close"/></svg></button>
+  </div>
+  <div class="nav-tools" role="toolbar" aria-label="Navigator controls">
+    <button class="icon-button" id="collapse-folders" type="button" title="Collapse all folders" aria-label="Collapse all folders" data-command="collapse-folders"><svg class="icon" aria-hidden="true"><use href="#i-collapse"/></svg></button>
+    <button class="icon-button" id="sidebar-smaller" type="button" title="Decrease left sidebar width" aria-label="Decrease left sidebar width"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
+    <button class="icon-button" id="sidebar-larger" type="button" title="Increase left sidebar width" aria-label="Increase left sidebar width"><svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+    <button class="icon-button" data-wrap-control="left" type="button" title="Toggle wrapping in file navigator" aria-label="Toggle wrapping in file navigator" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-wrap"/></svg></button>
+    <button class="icon-button" id="font-smaller" type="button" title="Decrease note text size" aria-label="Decrease note text size"><svg class="icon" aria-hidden="true"><use href="#i-type-minus"/></svg></button>
+    <button class="icon-button" id="font-larger" type="button" title="Increase note text size" aria-label="Increase note text size"><svg class="icon" aria-hidden="true"><use href="#i-type-plus"/></svg></button>
+    <button class="icon-button" id="open-command-palette-nav" type="button" title="Open command palette (Ctrl+P)" aria-label="Open command palette" data-command="open-command-palette"><svg class="icon" aria-hidden="true"><use href="#i-command"/></svg></button>
+  </div>
+  <div class="search-row">
+    <svg class="icon search-icon" aria-hidden="true"><use href="#i-search"/></svg>
+    <input id="vault-search" type="search" placeholder="Search files…" autocomplete="off" spellcheck="false" aria-label="Fuzzy search files by name">
+    <kbd class="search-hint" id="search-hint" aria-hidden="true">Ctrl+O</kbd>
+  </div>
+  <div class="tree" id="vault-tree">__NAV__</div>
+</nav>
+<div class="content" id="content">__CONTENT__</div>
+</div>
+<button class="floating-toggle icon-button" id="show-sidebar" type="button" aria-label="Show left sidebar" title="Show left sidebar" data-command="toggle-left-sidebar"><svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg></button>
+<div class="global-tools" role="toolbar" aria-label="View controls">
+  <button class="icon-button" id="show-right-sidebar" type="button" aria-label="Show right sidebar" title="Show right sidebar" data-command="toggle-right-sidebar" hidden><svg class="icon" aria-hidden="true"><use href="#i-panel-right"/></svg></button>
+  <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme" data-command="toggle-theme"><svg class="icon" aria-hidden="true"><use id="theme-icon" href="#i-moon"/></svg></button>
+  <button class="icon-button" id="palette-toggle" type="button" title="Choose color palette" aria-label="Choose color palette" data-command="choose-palette"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg></button>
+  <button class="icon-button" id="open-command-palette" type="button" title="Open command palette (Ctrl+P)" aria-label="Open command palette" data-command="open-command-palette"><svg class="icon" aria-hidden="true"><use href="#i-command"/></svg></button>
+</div>
+<div class="palette-menu" id="palette-menu" role="dialog" aria-label="Color palettes" hidden>
+  <strong>Color palette</strong>
+  <button class="palette-option" type="button" data-palette="default"><span class="palette-dots"><i style="background:#fff"></i><i style="background:#526fe5"></i><i style="background:#24272a"></i></span>Default</button>
+  <button class="palette-option" type="button" data-palette="nord"><span class="palette-dots"><i style="background:#eceff4"></i><i style="background:#5e81ac"></i><i style="background:#2e3440"></i></span>Nord</button>
+  <button class="palette-option" type="button" data-palette="dracula"><span class="palette-dots"><i style="background:#f8f8f2"></i><i style="background:#bd93f9"></i><i style="background:#282a36"></i></span>Dracula</button>
+  <button class="palette-option" type="button" data-palette="catppuccin"><span class="palette-dots"><i style="background:#eff1f5"></i><i style="background:#8839ef"></i><i style="background:#1e1e2e"></i></span>Catppuccin</button>
+  <button class="palette-option" type="button" data-palette="gruvbox"><span class="palette-dots"><i style="background:#fbf1c7"></i><i style="background:#af3a03"></i><i style="background:#282828"></i></span>Gruvbox</button>
+  <button class="palette-option" type="button" data-palette="solarized"><span class="palette-dots"><i style="background:#fdf6e3"></i><i style="background:#268bd2"></i><i style="background:#002b36"></i></span>Solarized</button>
+  <button class="palette-option" type="button" data-palette="tokyo-night"><span class="palette-dots"><i style="background:#d5d6db"></i><i style="background:#7aa2f7"></i><i style="background:#1a1b26"></i></span>Tokyo Night</button>
+  <button class="palette-option" type="button" data-palette="rose-pine"><span class="palette-dots"><i style="background:#faf4ed"></i><i style="background:#907aa9"></i><i style="background:#191724"></i></span>Rosé Pine</button>
+  <div class="palette-help">Applies to headings, links, bold, italic, and strikethrough text.</div>
+</div>
+<div class="nav-backdrop" id="nav-backdrop" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="command-overlay" id="command-palette" hidden>
+  <div class="command-dialog" role="dialog" aria-modal="true" aria-labelledby="command-title">
+    <h2 class="sr-only" id="command-title">Command palette</h2>
+    <div class="command-search">
+      <svg class="icon" aria-hidden="true"><use href="#i-command"/></svg>
+      <input id="command-input" type="text" placeholder="Type a command…" autocomplete="off" spellcheck="false" role="combobox" aria-controls="command-list" aria-expanded="true" aria-autocomplete="list">
+    </div>
+    <div class="command-list" id="command-list" role="listbox" aria-label="Commands"></div>
+    <div class="command-footer"><span>↑↓ Navigate</span><span>↵ Run</span><span>Esc Close</span></div>
+  </div>
+</div>
+<script>window.__VAULTLITE_CONFIG__=__CONFIG__;</script>
+<script>
+__JS__
+</script>
+</body>
+</html>

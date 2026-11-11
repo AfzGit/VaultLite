@@ -69,20 +69,83 @@ Push a version tag such as `v0.8.0` to build and attach archives to a GitHub Rel
 - `[[document.pdf]]` opens the PDF in a new browser tab; the server marks PDF responses as inline so the browser viewer can display them.
 - Other local file links resolve into the vault. Image links open an image preview inside the VaultLite reading pane.
 - `![[image.png]]`, `![[image.png|Alt text]]`, and width hints such as `![[image.png|320]]` embed images in notes.
+- `![[Note]]` and `![[Note.md]]` embed the full body of another note inline. Embeds render Markdown and respect direct and indirect recursion: a note that embeds itself, or an embed chain that loops back, shows a "Recursive embed stopped" notice instead of hanging. Depth and total-size limits cap very large embed graphs. Embedding notes are re-rendered on each request so edits appear immediately.
 - Extensionless image embeds resolve by attachment filename stem, including dotted titles such as `1.04) Wudu (Ablution)`.
 - Markdown image and file links are resolved relative to the current note. Previously generated `127.0.0.1:<port>/file/...` links are redirected into the current viewer; `.md` files always render as notes.
 - Obsidian callouts such as `[!note]`, `[!warning]`, `[!tip]`, `[!success]`, and `[!quote]`, with collapsible `+` and `-` forms. Markdown links in callout titles are rendered as links.
 - `.base` files open as in-browser Bases previews rather than downloads. The first configured view is displayed as a table, list, or card-style grid. Common file fields and simple `note.<property>` frontmatter columns are supported. Filter expressions, formulas, grouping, sorting, and the full Obsidian Bases expression language are not evaluated.
-- Nested directory navigator with icons: 📁 folders, 📄 Markdown notes, 🖼️ images, and 🔗 other files.
-- Fuzzy-by-default left search matches file names only; folders are shown only as the hierarchy for matching files. A separate search field filters headings in the current note. Press `/` to focus file search; Escape clears the active search.
-- Light and dark themes, with the selected theme saved in the browser.
-- Compact, collapsed frontmatter properties, filename heading, and right-hand table of contents.
+- `.canvas` files open in a read-only board viewer. Text, group, file, and link nodes render at their saved coordinates with connecting edges, whether drawn from the toolbar or by holding the left mouse button to drag the board, and the board can be zoomed or fitted to the window. Text nodes render basic Markdown such as **bold**, *italic*, `code`, strikethrough, highlights, lists, and headings.
+- Compact nested directory navigator with an inline SVG icon set: folders (closed/open), Markdown notes, Bases, canvases, images, and other files. File rows use a single line with ellipsis to maximise visible content; optional wrapping is available from the toolbar or command palette.
+- Fuzzy-by-default left search matches the whole filename with typo tolerance, subsequence matching, and multi-word queries, and ranks the closest matches first. Folder names are searchable too, but filename matches rank higher. Folders are shown only as the hierarchy for matching files. A separate search field filters headings in the current note. Press `/` or `Ctrl+O` to focus file search; Escape clears the active search.
+- Command palette (`Ctrl+P`) with keyboard-navigable commands for sidebar toggles, search, theme and colour palettes, folder collapse/expand, text-size controls, wrapping, collapsing the table of contents to level 1 headings, copying the current note, opening it in Obsidian, opening the config folder, and exiting VaultLite. The palette uses the same fuzzy ranking as file search. Every command binding is editable in `commands.conf`.
+- Dark and light themes. Dark is the default for new visitors, and the selected theme is saved in the browser.
+- Compact, collapsed frontmatter properties, filename heading, and a right-hand table of contents docked to the right edge like the file navigator. The TOC is a full-height panel and never overlaps the note. It can be widened or narrowed like the left sidebar, and a toolbar toggle collapses it to level 1 headings only.
+- Responsive layout: below 1024 px the TOC moves under the note, and below 760 px the file navigator becomes a touch-friendly drawer with a backdrop. The right-sidebar reopen button stays in the top-right control rail instead of moving to the bottom.
 - Icon-only controls with tooltips: collapse folders, resize or hide the left sidebar, independently wrap the left file tree and right TOC, and increase/decrease note-body font size. Font size changes do not affect either sidebar.
-- Fast in-page navigation: switching notes, image previews, and Bases views fetches only the content fragment and preserves the application shell and file tree. Back/Forward works between these views. The bottom link-relations section is a two-column table: inbound backlinks on the left and outgoing note links on the right. Both columns show compact inline note-name links without folder paths.
+- Fast in-page navigation: switching notes, image previews, Bases views, and canvases fetches only the content fragment and preserves the application shell and file tree. Back/Forward works between these views. The bottom link-relations section is a two-column table: inbound backlinks on the left and outgoing note links on the right. Both columns show compact inline note-name links without folder paths.
 - The vault is indexed once at startup for constant-time path/name/stem lookups. Rendered notes are cached in memory (bounded to approximately 32 MiB) and refreshed when file size or modification time changes. Images are served as raw bytes from a dedicated `/asset/` endpoint for both Markdown/Obsidian embeds and the standalone image preview; legacy `/file/` image URLs remain compatible. Images and other static files receive browser cache headers.
 - CommonMark plus tables, strikethrough, task lists, and footnotes.
 
 Wiki links resolve relative to the current note first, then relative to the vault. A case-insensitive filename fallback is also used. The directory index is built at startup; restart VaultLite after adding or renaming vault files so its navigator and link index are refreshed. VaultLite is intentionally a lightweight viewer rather than a complete Obsidian renderer. Plugins, Dataview, full Bases evaluation, graph features, editing, and live reload are not implemented.
+
+## Command palette and keyboard shortcuts
+
+Press `Ctrl+P` (`Cmd+P` on macOS) to open the command palette. Type to filter the
+commands that VaultLite can perform, use `↑`/`↓` to move through them, `Enter`
+to run one, and `Escape` to close the palette. `Ctrl+O` opens the file search.
+
+The default bindings are:
+
+| Command | Default |
+| --- | --- |
+| Open command palette | `Ctrl+P` |
+| Search files | `Ctrl+O` |
+| Toggle left sidebar | `Alt+Z` |
+| Toggle right sidebar | `Alt+X` |
+| Toggle dark mode | `Alt+T` |
+| Collapse all folders | `Alt+C` |
+| Expand all folders | `Alt+Shift+C` |
+| Increase note text size | `Alt+=` |
+| Decrease note text size | `Alt+-` |
+| Reset note text size | `Alt+0` |
+| Toggle file-name wrapping | `Alt+W` |
+| Toggle TOC wrapping | `Alt+Shift+W` |
+| Choose colour palette | `Alt+P` |
+| Go to vault home | `Alt+H` |
+| Toggle level 1 headings only | palette only |
+| Copy note | palette only |
+| Open note in Obsidian | palette only |
+| Open VaultLite config folder | palette only |
+| Exit VaultLite and stop server | palette only |
+
+The five palette-only commands have no default shortcut so they cannot be
+triggered accidentally. Assign them a binding in `commands.conf` if you want a
+keyboard shortcut.
+
+Bindings live in `commands.conf`, next to `launcher.conf`:
+
+- Windows: `%APPDATA%\vaultlite\commands.conf`
+- macOS: `~/Library/Application Support/vaultlite/commands.conf`
+- Linux: `$XDG_CONFIG_HOME/vaultlite/commands.conf`, or `~/.config/vaultlite/commands.conf`
+
+The file is created with documented defaults on first run. Edit the `[commands]`
+section and restart VaultLite to apply changes:
+
+```ini
+[commands]
+toggle-left-sidebar = Ctrl+Shift+L
+toggle-right-sidebar = Alt+X
+open-command-palette = Ctrl+P
+open-search = Ctrl+O
+# Use "off" to disable a command's shortcut.
+choose-palette = off
+# Palette-only commands can also be bound:
+copy-note = Alt+Shift+C
+open-in-obsidian = Alt+Shift+O
+```
+
+Set `VAULTLITE_COMMANDS_FILE` to use a different file, for example when running
+from a portable directory or in tests.
 
 ## Dependencies
 
@@ -131,7 +194,7 @@ The desktop launcher remembers the last selected vault, up to eight recent vault
 - macOS: `~/Library/Application Support/vaultlite/launcher.conf`
 - Linux: `$XDG_CONFIG_HOME/vaultlite/launcher.conf`, or `~/.config/vaultlite/launcher.conf`
 
-Only folder paths and homepage paths are stored. Vault contents are not copied or uploaded. Missing recent folders are ignored when the launcher starts.
+Only folder paths and homepage paths are stored. Vault contents are not copied or uploaded. Missing recent folders are ignored when the launcher starts. Keyboard shortcut overrides are stored separately in `commands.conf` in the same directory; see [Command palette and keyboard shortcuts](#command-palette-and-keyboard-shortcuts).
 
 
 Folders in the navigator start collapsed by default. Markdown links and image destinations may contain spaces in filenames; angle-bracket destinations and optional Markdown link titles are also handled.

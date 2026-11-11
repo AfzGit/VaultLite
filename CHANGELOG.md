@@ -1,3 +1,21 @@
+## Unreleased
+
+- Fix the right sidebar layout so the table of contents always occupies its own grid column and cannot overlap the note or the top control rail.
+- Dock the heading sidebar to the right viewport edge as a full-height panel, matching the file navigator's positioning.
+- Keep the right-sidebar reopen button in the top-right control rail when the sidebar is hidden.
+- Add a read-only `.canvas` board viewer with text, group, file, and link nodes plus curved edges, zoom, and fit-to-view controls.
+- Render basic Markdown in canvas text nodes and allow dragging the board with the left mouse button to pan.
+- Support `![[Note]]` and `![[Note.md]]` embeds with depth, size, and direct/indirect recursion guards.
+- Let the right sidebar be widened or narrowed like the left sidebar, and add a toggle that collapses the table of contents to level 1 headings.
+- Make dark theme the default for new visitors.
+- Replace the filename filter with ranked fuzzy search: subsequence matching across the full name, typo tolerance, multi-word and folder-path matching, and best-match ordering. The command palette uses the same ranking.
+- Add palette commands to copy the current note, open it in Obsidian, open the VaultLite config folder, and exit VaultLite while stopping the server.
+- Add a configurable command palette (`Ctrl+P`) and file search shortcut (`Ctrl+O`).
+- Add editable keyboard bindings in `commands.conf`, with `Alt+Z` for the left sidebar and `Alt+X` for the right sidebar by default.
+- Add responsive mobile support: off-canvas navigator with backdrop, stacked TOC and backlinks, touch-sized controls, and no horizontal overflow.
+- Make the file tree more compact and replace emoji icons with an inline SVG icon set.
+- Split the browser assets out of `main.rs` and add command-line tests for shortcut configuration.
+
 ## 0.8.9
 
 - Resolve Obsidian note links when the note name itself contains periods (for example, `[[Project.v2]]` → `Project.v2.md`).
