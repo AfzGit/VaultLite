@@ -1350,7 +1350,12 @@ fn render_note(
 
     let heading_pattern = heading_regex();
     let tag_pattern = html_tag_regex();
-    let mut toc = String::new();
+    struct TocHeading {
+        level: usize,
+        id: String,
+        text: String,
+    }
+    let mut headings = Vec::<TocHeading>::new();
     let mut slug_counts = std::collections::HashMap::<String, usize>::new();
     let with_ids = heading_pattern
         .replace_all(&rendered, |captures: &regex::Captures| {
@@ -1364,18 +1369,38 @@ fn render_note(
                 format!("{}-{}", base, count)
             };
             let level = captures[1].parse::<usize>().unwrap_or(1).clamp(1, 6);
-            let guides = (1..level).map(|_| "<i></i>").collect::<String>();
-            toc.push_str(&format!(
-                "<a class=\"toc-level-{}\" href=\"#{}\"><span class=\"toc-guides\" aria-hidden=\"true\">{}</span><span class=\"toc-label\">{}</span></a>",
+            headings.push(TocHeading {
                 level,
-                id,
-                guides,
-                esc(&heading_text)
-            ));
-            format!("<h{} id=\"{}\">{}</h{}>", &captures[1], id, &captures[2], &captures[1])
+                id: id.clone(),
+                text: heading_text,
+            });
+            format!(
+                "<h{} id=\"{}\">{}</h{}>",
+                &captures[1], id, &captures[2], &captures[1]
+            )
         })
         .to_string();
     let with_ids = apply_embeds(with_ids, embeds);
+
+    // The table of contents is built after the article so each entry knows
+    // whether it has nested headings. Entries carry their level and id so the
+    // client can collapse sections and highlight the heading in view.
+    let mut toc = String::new();
+    for (position, heading) in headings.iter().enumerate() {
+        let has_children = headings
+            .get(position + 1)
+            .map(|next| next.level > heading.level)
+            .unwrap_or(false);
+        let guides = (1..heading.level).map(|_| "<i></i>").collect::<String>();
+        toc.push_str(&format!(
+            "<div class=\"toc-entry toc-level-{level}\" data-level=\"{level}\" data-id=\"{id}\"><button class=\"toc-toggle\" type=\"button\" data-toc-toggle aria-expanded=\"true\" aria-label=\"Collapse section\" style=\"visibility:{visibility}\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-chevron-right\"/></svg></button><a class=\"toc-link\" href=\"#{id}\"><span class=\"toc-guides\" aria-hidden=\"true\">{guides}</span><span class=\"toc-label\">{text}</span></a></div>",
+            level = heading.level,
+            id = esc(&heading.id),
+            visibility = if has_children { "visible" } else { "hidden" },
+            guides = guides,
+            text = esc(&heading.text)
+        ));
+    }
 
     let backlink_route = url_path(&normalized_rel(relative_note));
     let mut output = String::with_capacity(with_ids.len() + toc.len() + 1400);
@@ -1388,7 +1413,7 @@ fn render_note(
     output.push_str("</article>");
     output.push_str("<section id=\"backlinks\" class=\"backlinks\" data-note-path=\"");
     output.push_str(&esc(&backlink_route));
-    output.push_str("\"><table class=\"link-relations\"><thead><tr><th>Backlinks</th><th>Outgoing links</th></tr></thead><tbody><tr><td class=\"muted\">Loading…</td><td class=\"muted\">Loading…</td></tr></tbody></table></section></main><aside aria-label=\"Table of contents\"><div class=\"toc-heading\"><b>On this page</b><div class=\"toc-actions\"><button class=\"icon-button\" data-toc-resize=\"smaller\" type=\"button\" title=\"Decrease right sidebar width\" aria-label=\"Decrease right sidebar width\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-chevron-left\"/></svg></button><button class=\"icon-button\" data-toc-resize=\"larger\" type=\"button\" title=\"Increase right sidebar width\" aria-label=\"Increase right sidebar width\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-chevron-right\"/></svg></button><button class=\"icon-button\" data-toc-level-one=\"true\" type=\"button\" title=\"Show only level 1 headings\" aria-label=\"Show only level 1 headings\" aria-pressed=\"false\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-levels\"/></svg></button><button class=\"icon-button\" data-wrap-control=\"right\" type=\"button\" title=\"Toggle wrapping in table of contents\" aria-label=\"Toggle wrapping in table of contents\" aria-pressed=\"false\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-wrap\"/></svg></button><button class=\"icon-button\" id=\"hide-right-sidebar\" type=\"button\" title=\"Hide right sidebar\" aria-label=\"Hide right sidebar\" data-command=\"toggle-right-sidebar\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-panel-right-close\"/></svg></button></div></div><input id=\"heading-search\" type=\"search\" placeholder=\"Find headings…\" autocomplete=\"off\" aria-label=\"Search headings in this note\"><div class=\"toc\">");
+    output.push_str("\"><table class=\"link-relations\"><thead><tr><th>Backlinks</th><th>Outgoing links</th></tr></thead><tbody><tr><td class=\"muted\">Loading…</td><td class=\"muted\">Loading…</td></tr></tbody></table></section></main><aside aria-label=\"Table of contents\"><div class=\"toc-heading\"><b>On this page</b><div class=\"toc-actions\"><button class=\"icon-button\" data-toc-resize=\"larger\" type=\"button\" title=\"Increase right sidebar width\" aria-label=\"Increase right sidebar width\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-chevron-right\"/></svg></button><button class=\"icon-button\" data-toc-resize=\"smaller\" type=\"button\" title=\"Decrease right sidebar width\" aria-label=\"Decrease right sidebar width\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-chevron-left\"/></svg></button><button class=\"icon-button\" data-toc-level-one=\"true\" type=\"button\" title=\"Show only level 1 headings\" aria-label=\"Show only level 1 headings\" aria-pressed=\"false\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-levels\"/></svg></button><button class=\"icon-button\" data-wrap-control=\"right\" type=\"button\" title=\"Toggle wrapping in table of contents\" aria-label=\"Toggle wrapping in table of contents\" aria-pressed=\"false\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-wrap\"/></svg></button><button class=\"icon-button\" id=\"hide-right-sidebar\" type=\"button\" title=\"Hide right sidebar\" aria-label=\"Hide right sidebar\" data-command=\"toggle-right-sidebar\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-panel-right-close\"/></svg></button></div></div><input id=\"heading-search\" type=\"search\" placeholder=\"Find headings…\" autocomplete=\"off\" aria-label=\"Search headings in this note\"><div class=\"toc\">");
     if toc.is_empty() {
         output.push_str("<span class=\"muted\">No headings</span>");
     } else {
@@ -2899,6 +2924,30 @@ mod page_tests {
         assert!(is_canvas(Path::new("FOLDER/BOARD.CANVAS")));
         assert_eq!(file_icon(Path::new("Board.canvas")), "i-canvas");
         assert!(!is_canvas(Path::new("Board.md")));
+    }
+
+    #[test]
+    fn toc_entries_carry_collapse_metadata_and_width_buttons_are_ordered() {
+        let dir = std::env::temp_dir().join(format!("vaultlite-toc-test-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("Toc.md"), "# A\n\n## B\n\n### C\n\n## D\n").unwrap();
+
+        let root = dir.canonicalize().unwrap();
+        let index = VaultIndex::build(&root);
+        let source = fs::read_to_string(root.join("Toc.md")).unwrap();
+        let html = render_note(&root, &index, Path::new("Toc.md"), "Toc", &source);
+
+        assert!(html.contains("class=\"toc-entry toc-level-1\" data-level=\"1\" data-id=\"a\""));
+        assert!(html.contains("class=\"toc-entry toc-level-2\" data-level=\"2\" data-id=\"b\""));
+        assert!(html.contains("class=\"toc-entry toc-level-3\" data-level=\"3\" data-id=\"c\""));
+        assert!(html.contains("data-toc-toggle"));
+        // The wider button comes first now, followed by the narrower button.
+        let larger = html.find("data-toc-resize=\"larger\"").unwrap();
+        let smaller = html.find("data-toc-resize=\"smaller\"").unwrap();
+        assert!(larger < smaller);
+
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]

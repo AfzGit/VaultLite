@@ -24,6 +24,7 @@ pub const DEFAULT_BINDINGS: &[(&str, &str)] = &[
     ("go-home", "Alt+H"),
     // These commands are available from the palette and have no default
     // shortcut, so they cannot be triggered accidentally.
+    ("toggle-justify", ""),
     ("copy-note", ""),
     ("open-in-obsidian", ""),
     ("exit-app", ""),
@@ -246,8 +247,8 @@ fn write_template(path: &Path) -> std::io::Result<()> {
          #   toggle-right-sidebar, toggle-theme, collapse-folders,\n\
          #   expand-folders, font-increase, font-decrease, reset-font-size,\n\
          #   toggle-left-wrap, toggle-right-wrap, choose-palette, go-home,\n\
-         #   toggle-toc-level-one, copy-note, open-in-obsidian, exit-app,\n\
-         #   open-config-folder\n\
+         #   toggle-toc-level-one, toggle-justify, copy-note,\n\
+         #   open-in-obsidian, exit-app, open-config-folder\n\
          \n\
          [commands]\n",
     );

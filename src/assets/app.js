@@ -478,27 +478,199 @@
   };
   setNoteFontSize(noteFontSize);
 
-  /* Heading search --------------------------------------------------------- */
+  /* Text justification ----------------------------------------------------- */
 
-  const setupHeadingSearch = () => {
-    const headingSearch = document.getElementById('heading-search');
+  let justifyText = store.get('justify') === '1';
+  const setJustify = value => {
+    justifyText = !!value;
+    body.classList.toggle('justify-text', justifyText);
+    store.set('justify', justifyText ? '1' : '0');
+  };
+  setJustify(justifyText);
+
+  /* Table of contents ------------------------------------------------------
+     The outline supports collapsible sections, active-heading tracking while
+     scrolling, and stable anchor navigation. Images and other late-loading
+     content can change the document height after a heading is reached, so the
+     clicked heading is re-aligned whenever observed layout changes. */
+  let scrollToHeading = null;
+
+  const setupToc = () => {
+    scrollToHeading = null;
     const toc = document.querySelector('.toc');
-    if (!headingSearch || !toc) return;
-    headingSearch.addEventListener('input', () => {
-      const query = headingSearch.value.trim().toLocaleLowerCase();
-      toc.querySelectorAll('a').forEach(link => {
-        link.style.display = !query || link.textContent.toLocaleLowerCase().includes(query) ? '' : 'none';
-      });
+    const article = document.querySelector('.layout > main > article');
+    if (!toc || !article) return;
+    const entries = Array.from(toc.querySelectorAll('.toc-entry'));
+    if (!entries.length) return;
+
+    const headingById = new Map();
+    entries.forEach(entry => {
+      const heading = document.getElementById(entry.dataset.id);
+      if (heading) headingById.set(entry.dataset.id, heading);
     });
-    headingSearch.addEventListener('keydown', event => {
-      if (event.key === 'Escape') {
-        headingSearch.value = '';
-        headingSearch.dispatchEvent(new Event('input'));
-        headingSearch.blur();
+
+    const collapsed = new Set();
+    const applyCollapsed = () => {
+      let hiddenBelow = null;
+      entries.forEach(entry => {
+        const level = Number(entry.dataset.level) || 1;
+        if (hiddenBelow !== null && level <= hiddenBelow) hiddenBelow = null;
+        const hidden = hiddenBelow !== null;
+        entry.classList.toggle('toc-hidden', hidden);
+        const toggle = entry.querySelector('[data-toc-toggle]');
+        if (toggle) {
+          const isCollapsed = collapsed.has(entry.dataset.id);
+          toggle.setAttribute('aria-expanded', String(!isCollapsed));
+          toggle.title = isCollapsed ? 'Expand section' : 'Collapse section';
+          toggle.setAttribute('aria-label', toggle.title);
+        }
+        if (!hidden && collapsed.has(entry.dataset.id)) hiddenBelow = level;
+      });
+    };
+
+    let activeId = null;
+    const setActive = id => {
+      if (activeId === id) return;
+      activeId = id;
+      entries.forEach(entry => {
+        const active = entry.dataset.id === id;
+        entry.classList.toggle('active', active);
+        const link = entry.querySelector('.toc-link');
+        if (!link) return;
+        if (active) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    };
+
+    const updateActiveFromScroll = () => {
+      // The heading that most recently crossed the top 20% of the viewport is
+      // the one being read. Before any heading crosses the line, the first one
+      // stays highlighted so the outline always reflects a position.
+      const threshold = window.innerHeight * 0.2;
+      let current = entries[0].dataset.id;
+      for (const entry of entries) {
+        const heading = headingById.get(entry.dataset.id);
+        if (!heading) continue;
+        if (heading.getBoundingClientRect().top <= threshold) current = entry.dataset.id;
+        else break;
+      }
+      if (current) setActive(current);
+    };
+
+    const scrollOffset = () => {
+      const rail = parseFloat(getComputedStyle(root).getPropertyValue('--top-rail'));
+      return (Number.isFinite(rail) ? rail : 54) + 12;
+    };
+    const align = id => {
+      const heading = headingById.get(id);
+      if (!heading) return;
+      const top = heading.getBoundingClientRect().top + window.scrollY - scrollOffset();
+      window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+    };
+
+    // Re-align while the browser settles lazy images and other async content.
+    // Any deliberate user scroll cancels the lock so the page never fights the
+    // reader.
+    let stabilizing = null;
+    let stabilizingUntil = 0;
+    const stabilize = id => {
+      align(id);
+      stabilizing = id;
+      stabilizingUntil = performance.now() + 1800;
+    };
+    const stopStabilizing = () => { stabilizing = null; };
+    if ('ResizeObserver' in window) {
+      const observer = new ResizeObserver(() => {
+        if (stabilizing && performance.now() < stabilizingUntil) align(stabilizing);
+      });
+      observer.observe(article);
+    }
+    document.addEventListener('load', event => {
+      if (!stabilizing || !(event.target instanceof HTMLImageElement)) return;
+      // A late image can shift the target even after the initial window; keep
+      // the lock alive while images are still arriving.
+      align(stabilizing);
+      stabilizingUntil = performance.now() + 1200;
+    }, true);
+    window.addEventListener('wheel', stopStabilizing, { passive: true });
+    window.addEventListener('touchstart', stopStabilizing, { passive: true });
+    window.addEventListener('keydown', event => {
+      if (['PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End', ' '].includes(event.key)) {
+        stopStabilizing();
       }
     });
+
+    let scrollQueued = false;
+    window.addEventListener('scroll', () => {
+      if (scrollQueued) return;
+      scrollQueued = true;
+      requestAnimationFrame(() => {
+        scrollQueued = false;
+        updateActiveFromScroll();
+      });
+    }, { passive: true });
+
+    toc.addEventListener('click', event => {
+      const toggle = event.target.closest('[data-toc-toggle]');
+      if (toggle) {
+        event.preventDefault();
+        const entry = toggle.closest('.toc-entry');
+        const id = entry && entry.dataset.id;
+        if (!id) return;
+        if (collapsed.has(id)) collapsed.delete(id);
+        else collapsed.add(id);
+        applyCollapsed();
+        updateActiveFromScroll();
+        return;
+      }
+      const link = event.target.closest('.toc-link');
+      if (!link) return;
+      event.preventDefault();
+      const raw = (link.getAttribute('href') || '').slice(1);
+      if (!raw) return;
+      const id = decodeURIComponent(raw);
+      if (history.replaceState) history.replaceState(null, '', '#' + raw);
+      setActive(id);
+      stabilize(id);
+    });
+
+    const headingSearch = document.getElementById('heading-search');
+    if (headingSearch) {
+      headingSearch.addEventListener('input', () => {
+        const query = headingSearch.value.trim().toLocaleLowerCase();
+        entries.forEach(entry => {
+          const label = entry.querySelector('.toc-label');
+          const text = label ? label.textContent.toLocaleLowerCase() : '';
+          entry.style.display = !query || text.includes(query) ? '' : 'none';
+        });
+      });
+      headingSearch.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          headingSearch.value = '';
+          headingSearch.dispatchEvent(new Event('input'));
+          headingSearch.blur();
+        }
+      });
+    }
+
+    scrollToHeading = id => {
+      if (!headingById.has(id)) return;
+      setActive(id);
+      stabilize(id);
+    };
+
+    applyCollapsed();
+    updateActiveFromScroll();
+    if (location.hash) {
+      const id = decodeURIComponent(location.hash.slice(1));
+      if (headingById.has(id)) requestAnimationFrame(() => scrollToHeading(id));
+    }
+    window.addEventListener('load', () => {
+      if (stabilizing) align(stabilizing);
+      else updateActiveFromScroll();
+    }, { once: true });
   };
-  setupHeadingSearch();
+  setupToc();
 
   /* Backlinks -------------------------------------------------------------- */
 
@@ -723,6 +895,16 @@
     viewport.append(stage);
     host.append(toolbar, viewport);
 
+    // Reserve one viewport of free space around the board. Without it, a board
+    // that fits inside the viewport has no scroll range and a cursor-centred
+    // zoom would have to clamp, making the point under the pointer drift.
+    const padX = Math.max(160, viewport.clientWidth);
+    const padY = Math.max(160, viewport.clientHeight);
+    stage.dataset.padX = String(padX);
+    stage.dataset.padY = String(padY);
+    board.style.left = padX + 'px';
+    board.style.top = padY + 'px';
+
     // Drag the board with the left mouse button. Interactive nodes keep their
     // normal click behaviour; dragging anywhere else pans the viewport.
     let panning = false;
@@ -757,17 +939,36 @@
     viewport.addEventListener('pointercancel', endPan);
 
     let scale = 1;
-    const applyScale = next => {
+    // Zoom around the cursor: convert the pointer to board coordinates using
+    // the current scale, then restore the same board point beneath the pointer
+    // after resizing the stage. Without this, the board drifts away from the
+    // area the user is inspecting.
+    const applyScale = (next, anchor, center) => {
+      const previous = scale;
+      const rect = viewport.getBoundingClientRect();
+      const focusX = anchor ? anchor.x - rect.left : viewport.clientWidth / 2;
+      const focusY = anchor ? anchor.y - rect.top : viewport.clientHeight / 2;
+      const boardX = (viewport.scrollLeft + focusX - padX) / previous;
+      const boardY = (viewport.scrollTop + focusY - padY) / previous;
       scale = clamp(next, 0.2, 2.5);
       board.style.transform = 'scale(' + scale + ')';
-      stage.style.width = (boardWidth * scale) + 'px';
-      stage.style.height = (boardHeight * scale) + 'px';
+      const stageWidth = (boardWidth * scale) + padX * 2;
+      const stageHeight = (boardHeight * scale) + padY * 2;
+      stage.style.width = stageWidth + 'px';
+      stage.style.height = stageHeight + 'px';
       zoomLabel.textContent = Math.round(scale * 100) + '%';
+      if (center) {
+        viewport.scrollLeft = Math.max(0, (stageWidth - viewport.clientWidth) / 2);
+        viewport.scrollTop = Math.max(0, (stageHeight - viewport.clientHeight) / 2);
+      } else {
+        viewport.scrollLeft = clamp(boardX * scale + padX - focusX, 0, Math.max(0, stageWidth - viewport.clientWidth));
+        viewport.scrollTop = clamp(boardY * scale + padY - focusY, 0, Math.max(0, stageHeight - viewport.clientHeight));
+      }
     };
     const fitToView = () => {
       const availableWidth = Math.max(120, viewport.clientWidth - 28);
       const availableHeight = Math.max(120, viewport.clientHeight - 28);
-      applyScale(Math.min(availableWidth / boardWidth, availableHeight / boardHeight, 1));
+      applyScale(Math.min(availableWidth / boardWidth, availableHeight / boardHeight, 1), null, true);
     };
     zoomOut.addEventListener('click', () => applyScale(scale - 0.1));
     zoomIn.addEventListener('click', () => applyScale(scale + 0.1));
@@ -775,7 +976,7 @@
     viewport.addEventListener('wheel', event => {
       if (!event.ctrlKey) return;
       event.preventDefault();
-      applyScale(scale + (event.deltaY < 0 ? 0.1 : -0.1));
+      applyScale(scale + (event.deltaY < 0 ? 0.1 : -0.1), { x: event.clientX, y: event.clientY });
     }, { passive: false });
 
     const edgeLayer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -884,7 +1085,7 @@
       }
     });
     edgeLayer.prepend(definitions);
-    applyScale(1);
+    applyScale(1, null, true);
     window.requestAnimationFrame(fitToView);
   };
   const setupCanvas = () => {
@@ -932,12 +1133,17 @@
       applyWrap('right', getWrap('right'));
       rightSidebar.sync();
       syncTocControls();
-      setupHeadingSearch();
+      setupToc();
       setupCanvas();
       if (kind === 'note') hydrateBacklinks(encodedPath);
       syncActiveFile();
       if (target.hash) {
-        requestAnimationFrame(() => document.getElementById(decodeURIComponent(target.hash.slice(1)))?.scrollIntoView());
+        const id = decodeURIComponent(target.hash.slice(1));
+        if (scrollToHeading) {
+          requestAnimationFrame(() => scrollToHeading(id));
+        } else {
+          requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
+        }
       } else {
         window.scrollTo(0, 0);
       }
@@ -984,6 +1190,7 @@
     { id: 'reset-font-size', title: 'Reset note text size', keywords: 'font zoom default', run: () => setNoteFontSize(16) },
     { id: 'toggle-left-wrap', title: 'Toggle file name wrapping', keywords: 'navigator tree', run: () => setWrap('left', !getWrap('left')) },
     { id: 'toggle-right-wrap', title: 'Toggle table of contents wrapping', keywords: 'toc outline', run: () => setWrap('right', !getWrap('right')) },
+    { id: 'toggle-justify', title: 'Toggle justified text', keywords: 'justify alignment text layout paragraph', run: () => setJustify(!justifyText) },
     { id: 'choose-palette', title: 'Choose color palette', keywords: 'theme colors appearance', run: () => setPaletteMenu(paletteMenu.hidden) },
     { id: 'go-home', title: 'Go to vault home', keywords: 'start index home', run: () => { if (location.pathname !== '/') location.assign('/'); } },
     { id: 'copy-note', title: 'Copy note', keywords: 'clipboard markdown source current', run: copyNote },

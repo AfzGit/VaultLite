@@ -74,12 +74,12 @@ Push a version tag such as `v0.8.0` to build and attach archives to a GitHub Rel
 - Markdown image and file links are resolved relative to the current note. Previously generated `127.0.0.1:<port>/file/...` links are redirected into the current viewer; `.md` files always render as notes.
 - Obsidian callouts such as `[!note]`, `[!warning]`, `[!tip]`, `[!success]`, and `[!quote]`, with collapsible `+` and `-` forms. Markdown links in callout titles are rendered as links.
 - `.base` files open as in-browser Bases previews rather than downloads. The first configured view is displayed as a table, list, or card-style grid. Common file fields and simple `note.<property>` frontmatter columns are supported. Filter expressions, formulas, grouping, sorting, and the full Obsidian Bases expression language are not evaluated.
-- `.canvas` files open in a read-only board viewer. Text, group, file, and link nodes render at their saved coordinates with connecting edges, whether drawn from the toolbar or by holding the left mouse button to drag the board, and the board can be zoomed or fitted to the window. Text nodes render basic Markdown such as **bold**, *italic*, `code`, strikethrough, highlights, lists, and headings.
+- `.canvas` files open in a read-only board viewer. Text, group, file, and link nodes render at their saved coordinates with connecting edges, whether drawn from the toolbar or by holding the left mouse button to drag the board, and the board can be zoomed or fitted to the window. Zooming with `Ctrl` + scroll keeps the point beneath the cursor fixed. Text nodes render basic Markdown such as **bold**, *italic*, `code`, strikethrough, highlights, lists, and headings.
 - Compact nested directory navigator with an inline SVG icon set: folders (closed/open), Markdown notes, Bases, canvases, images, and other files. File rows use a single line with ellipsis to maximise visible content; optional wrapping is available from the toolbar or command palette.
 - Fuzzy-by-default left search matches the whole filename with typo tolerance, subsequence matching, and multi-word queries, and ranks the closest matches first. Folder names are searchable too, but filename matches rank higher. Folders are shown only as the hierarchy for matching files. A separate search field filters headings in the current note. Press `/` or `Ctrl+O` to focus file search; Escape clears the active search.
-- Command palette (`Ctrl+P`) with keyboard-navigable commands for sidebar toggles, search, theme and colour palettes, folder collapse/expand, text-size controls, wrapping, collapsing the table of contents to level 1 headings, copying the current note, opening it in Obsidian, opening the config folder, and exiting VaultLite. The palette uses the same fuzzy ranking as file search. Every command binding is editable in `commands.conf`.
+- Command palette (`Ctrl+P`) with keyboard-navigable commands for sidebar toggles, search, theme and colour palettes, folder collapse/expand, text-size controls, wrapping, justified text, collapsing the table of contents to level 1 headings, copying the current note, opening it in Obsidian, opening the config folder, and exiting VaultLite. The palette uses the same fuzzy ranking as file search. Every command binding is editable in `commands.conf`.
 - Dark and light themes. Dark is the default for new visitors, and the selected theme is saved in the browser.
-- Compact, collapsed frontmatter properties, filename heading, and a right-hand table of contents docked to the right edge like the file navigator. The TOC is a full-height panel and never overlaps the note. It can be widened or narrowed like the left sidebar, and a toolbar toggle collapses it to level 1 headings only.
+- Compact, collapsed frontmatter properties, filename heading, and a right-hand table of contents docked to the right edge like the file navigator. The TOC is a full-height panel and never overlaps the note. It can be widened or narrowed like the left sidebar, and a toolbar toggle collapses it to level 1 headings only. The heading in view is highlighted as you scroll, outline sections have expand/collapse arrows, and clicking a heading scrolls it to the top and keeps it there while lazy images settle.
 - Responsive layout: below 1024 px the TOC moves under the note, and below 760 px the file navigator becomes a touch-friendly drawer with a backdrop. The right-sidebar reopen button stays in the top-right control rail instead of moving to the bottom.
 - Icon-only controls with tooltips: collapse folders, resize or hide the left sidebar, independently wrap the left file tree and right TOC, and increase/decrease note-body font size. Font size changes do not affect either sidebar.
 - Fast in-page navigation: switching notes, image previews, Bases views, and canvases fetches only the content fragment and preserves the application shell and file tree. Back/Forward works between these views. The bottom link-relations section is a two-column table: inbound backlinks on the left and outgoing note links on the right. Both columns show compact inline note-name links without folder paths.
@@ -113,12 +113,13 @@ The default bindings are:
 | Choose colour palette | `Alt+P` |
 | Go to vault home | `Alt+H` |
 | Toggle level 1 headings only | palette only |
+| Toggle justified text | palette only |
 | Copy note | palette only |
 | Open note in Obsidian | palette only |
 | Open VaultLite config folder | palette only |
 | Exit VaultLite and stop server | palette only |
 
-The five palette-only commands have no default shortcut so they cannot be
+The six palette-only commands have no default shortcut so they cannot be
 triggered accidentally. Assign them a binding in `commands.conf` if you want a
 keyboard shortcut.
 
@@ -146,6 +147,12 @@ open-in-obsidian = Alt+Shift+O
 
 Set `VAULTLITE_COMMANDS_FILE` to use a different file, for example when running
 from a portable directory or in tests.
+
+## Architecture
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for an overview of the server, rendering
+pipeline, front-end modules, configuration flow, security model, and the quirks
+worth knowing before changing the code.
 
 ## Dependencies
 

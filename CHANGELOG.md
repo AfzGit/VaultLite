@@ -9,6 +9,12 @@
 - Let the right sidebar be widened or narrowed like the left sidebar, and add a toggle that collapses the table of contents to level 1 headings.
 - Make dark theme the default for new visitors.
 - Replace the filename filter with ranked fuzzy search: subsequence matching across the full name, typo tolerance, multi-word and folder-path matching, and best-match ordering. The command palette uses the same ranking.
+- Highlight the active table-of-contents heading while scrolling, and keep the clicked heading pinned below the top rail while lazy images settle.
+- Add expand/collapse arrows to table-of-contents sections.
+- Swap the right-sidebar width buttons so the wider control comes first.
+- Make canvas zoom keep the point beneath the cursor fixed.
+- Add a palette command to toggle justified paragraph text.
+- Add `ARCHITECTURE.md` documenting the server, rendering pipeline, front-end modules, workflows, and implementation quirks.
 - Add palette commands to copy the current note, open it in Obsidian, open the VaultLite config folder, and exit VaultLite while stopping the server.
 - Add a configurable command palette (`Ctrl+P`) and file search shortcut (`Ctrl+O`).
 - Add editable keyboard bindings in `commands.conf`, with `Alt+Z` for the left sidebar and `Alt+X` for the right sidebar by default.

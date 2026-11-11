@@ -271,6 +271,7 @@ article img, .vault-image { max-width: 100%; height: auto; border-radius: 5px; }
 article a { overflow-wrap: anywhere; }
 article h1, article h2, article h3 { line-height: 1.3; margin-top: 1.7em; }
 article h1:first-child, article h2:first-child { margin-top: 0; }
+article :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: calc(var(--top-rail) + 12px); }
 pre { overflow: auto; padding: 14px; background: var(--code); border-radius: 7px; }
 code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 blockquote { border-left: 3px solid var(--line); margin-left: 0; padding-left: 16px; color: var(--muted); }
@@ -353,7 +354,7 @@ aside {
 .toc-heading b { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg); margin: 0; white-space: nowrap; }
 .toc-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px; }
 .toc-actions .icon-button { width: 24px; height: 24px; min-width: 24px; }
-aside.toc-level-one .toc a:not(.toc-level-1) { display: none; }
+aside.toc-level-one .toc-entry:not(.toc-level-1) { display: none; }
 #heading-search {
   width: 100%;
   padding: 5px 8px;
@@ -369,15 +370,50 @@ aside.toc-level-one .toc a:not(.toc-level-1) { display: none; }
 #heading-search:focus { border-color: var(--accent); }
 aside b { display: block; color: var(--fg); margin: 0; }
 aside a { display: block; color: inherit; text-decoration: none; margin: 0; overflow-wrap: anywhere; }
-.toc a { display: flex; align-items: stretch; gap: 0; min-width: 0; padding: 0; min-height: 1.75em; }
+.toc-entry { display: flex; align-items: stretch; min-width: 0; border-radius: 5px; }
+.toc-entry.toc-hidden { display: none; }
+.toc-toggle {
+  flex: 0 0 16px;
+  width: 16px;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 4px;
+}
+.toc-toggle .icon { width: 12px; height: 12px; transition: transform 0.15s ease; }
+.toc-toggle[aria-expanded="true"] .icon { transform: rotate(90deg); }
+.toc-toggle:hover { color: var(--fg); background: var(--hover); }
+.toc-link { flex: 1 1 auto; display: flex; align-items: stretch; min-width: 0; padding: 0; min-height: 1.75em; border-radius: 4px; }
+.toc-entry:hover > .toc-link { background: var(--hover); }
+.toc-entry.active > .toc-link {
+  color: var(--fg);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
 .toc-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 0; }
 .toc-guides { display: inline-flex; align-self: stretch; flex: 0 0 auto; }
 .toc-guides i { position: relative; display: block; width: 13px; height: 100%; min-height: 100%; border-left: 1px solid var(--line); }
 .toc-guides i:last-child::after { content: ""; position: absolute; left: 0; top: 50%; width: 7px; border-top: 1px solid var(--line); }
-.toc-level-1 .toc-guides { display: none; }
+.toc-entry.toc-level-1 .toc-guides { display: none; }
 body.right-wrap aside { overflow-x: auto; }
 body.right-wrap aside a { white-space: nowrap; overflow-wrap: normal; }
 body.right-wrap .toc-label { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+
+/* Optional justified text, toggled from the command palette. */
+body.justify-text article p,
+body.justify-text article li,
+body.justify-text .note-embed-body p {
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  text-align-last: left;
+}
 
 /* Backlinks live inside the article column, keeping them clear of the TOC. */
 .backlinks { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--line); }
