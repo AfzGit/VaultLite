@@ -211,11 +211,21 @@
     },
     sync() {
       const available = this.available();
+      const hidden = this.hidden();
       body.classList.toggle('has-toc', available);
+      // The far-right toolbar button toggles the panel in both directions, so
+      // it stays visible wherever a table of contents exists.
       const button = document.getElementById('show-right-sidebar');
-      if (button) button.hidden = !(available && this.hidden());
+      if (button) {
+        button.hidden = !available;
+        button.title = hidden ? 'Show right sidebar' : 'Hide right sidebar';
+        button.setAttribute('aria-label', button.title);
+        button.setAttribute('aria-pressed', String(!hidden));
+        const icon = button.querySelector('use');
+        if (icon) icon.setAttribute('href', hidden ? '#i-panel-right' : '#i-panel-right-close');
+      }
       const hide = document.getElementById('hide-right-sidebar');
-      if (hide) hide.setAttribute('aria-expanded', String(!this.hidden()));
+      if (hide) hide.setAttribute('aria-expanded', String(!hidden));
     }
   };
   leftSidebar.sync();

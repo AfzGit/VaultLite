@@ -18,7 +18,9 @@ rendering workflows, and the quirks worth knowing before changing the code.
 | `src/assets/app.js` | All browser behaviour: navigation, search, TOC, command palette, canvas, preferences. |
 | `src/assets/app.css` | Theme variables, reading layout, sidebar/TOC, canvas, palette, responsive rules. |
 | `README.md` | User-facing feature and configuration documentation. |
-| `CHANGELOG.md` | Per-release change log. |
+| `CHANGELOG.md` | Per-release change log; the release workflow promotes `Unreleased` entries. |
+| `scripts/` | Dependency-free Node helpers for version bumps, changelog extraction, and tag verification. |
+| `.github/workflows/` | `ci.yml` (checks) and `release.yml` (version bump, build matrix, publish). |
 
 `main.rs` is intentionally a single binary crate. Most server-side helpers are
 free functions; shared state lives in `AppState`. The file is large but divided
@@ -141,6 +143,13 @@ to the embedded note appear on the next request. Image-only embeds remain
 cacheable. If an embed cannot be expanded, `embed_notice` emits a linked notice
 such as “Recursive embed stopped.” rather than failing the page.
 
+Every embed section starts with `embed_open_link`, an `<a class="markdown-embed-link">`
+that points at the source note and contains an inline Lucide `maximize-2` icon.
+The stylesheet positions it at the card's top-right corner, reveals it on hover or
+keyboard focus, and reserves title padding so it cannot cover the label. Because
+it is a normal link, the global click handler routes it through in-page
+navigation, while modifier/middle clicks retain browser behaviour.
+
 ### Cache
 
 `cached_note` reads a note, renders it, and stores the HTML in `NoteCache`
@@ -169,8 +178,11 @@ sections:
    palette, sidebar widths, font size, wrapping, and justification are persisted.
 2. **Sidebars and TOC controls** — left/right sidebar visibility, left-sidebar
    and right-sidebar widths (`--sidebar-width` 190–520 px / `--toc-width`
-   160–520 px, both defaulting to 312 px), the right-sidebar reopen button, and
-   the collapse-all-to-level-1 mode.
+   160–520 px, both defaulting to 312 px), the far-right right-sidebar toggle, and
+   the collapse-all-to-level-1 mode. The toggle stays visible whenever a TOC
+   exists and swaps between `panel-right` and `panel-right-close`; the aside
+   reserves `--top-rail` plus extra space so outline rows never sit under the
+   fixed controls.
 3. **File tree and fuzzy search** — folders persist their state; search ranks
    filenames and paths (substring, subsequence, bounded typo distance). The
    command palette reuses `fuzzyScore`.
@@ -260,9 +272,10 @@ the server on a public interface.
 
 ```powershell
 cargo fmt --all
-cargo check --all-targets
-cargo test --all-targets
+cargo clippy --all-targets --locked -- -D warnings
+cargo test --all-targets --locked
 node --check src/assets/app.js
+node --check scripts/prepare-release.mjs
 cargo build
 ```
 
@@ -274,6 +287,37 @@ the executable is still in use.
 Tests live in `src/main.rs` (`page_tests`) and `src/config.rs`. Front-end tests
 are usually driven through a headless browser (Chrome DevTools Protocol) against
 a temporary vault; keep such scripts outside the repository.
+
+## Release automation
+
+Releases are tag-driven and use semantic versions (`MAJOR.MINOR.PATCH`, tag
+`vX.Y.Z`). The helpers in `scripts/` use only Node built-ins so they run on any
+runner and locally:
+
+- `prepare-release.mjs <version>` validates the version, bumps `Cargo.toml`,
+  `Cargo.lock`, and the README heading, and promotes every `## Unreleased` entry
+  into `## [X.Y.Z] - YYYY-MM-DD`. It fails when `Unreleased` is empty or the
+  version already exists, so every release has a changelog section.
+- `verify-release.mjs <tag>` asserts that the tag, Cargo version, README heading,
+  and changelog section agree.
+- `changelog-section.mjs <tag>` prints one version's notes for the GitHub
+  Release body.
+
+`.github/workflows/ci.yml` runs formatting, Clippy with warnings denied, tests, a
+debug build, and the JavaScript/script syntax checks.
+
+`.github/workflows/release.yml` supports two entry points:
+
+1. **Manual dispatch** with a version: a prepare job runs the bump, commits as
+   `chore(release): vX.Y.Z`, creates an annotated tag, and pushes both.
+2. **Tag push** (`v*.*.*`): a verify job checks the already-committed version
+   files.
+
+Both then run the four-target build matrix (Linux x86_64, Windows x86_64, macOS
+Intel, macOS Apple Silicon), package versioned archives with `README.md`,
+`LICENSE`, and `CHANGELOG.md`, and a single publish job creates the GitHub
+Release from `changelog-section.mjs` output. The default `GITHUB_TOKEN` is the
+only credential required.
 
 ## Quirks and pitfalls
 
@@ -301,3 +345,7 @@ a temporary vault; keep such scripts outside the repository.
   small board will clamp and drift.
 - **Windows file locks**: the running executable blocks rebuilds; stop the
   server/launcher you started rather than killing all VaultLite processes.
+- **Release versions**: `Cargo.toml`, `Cargo.lock`, the README heading, and
+  `CHANGELOG.md` must agree. Always release through
+  `scripts/prepare-release.mjs` (or the Release workflow) instead of editing one
+  version by hand; the tag path rejects mismatches.

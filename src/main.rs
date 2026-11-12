@@ -608,7 +608,7 @@ fn is_video_target(target: &str) -> bool {
         || lower.starts_with("https://vimeo.com/")
         || [".mp4", ".webm", ".mov", ".m4v", ".ogv"].iter().any(|ext| {
             lower
-                .split(|ch| ch == '?' || ch == '#')
+                .split(['?', '#'])
                 .next()
                 .unwrap_or(&lower)
                 .ends_with(ext)
@@ -694,12 +694,29 @@ impl EmbedScope {
     }
 }
 
+/// Lucide `maximize-2` icon used by the open control in embedded notes.
+const EMBED_OPEN_ICON: &str = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"svg-icon lucide-maximize-2\"><path d=\"M15 3h6v6\"></path><path d=\"m21 3-7 7\"></path><path d=\"m3 21 7-7\"></path><path d=\"M9 21H3v-6\"></path></svg>";
+
+/// Obsidian-style control in the top-right corner of an embedded note. It is a
+/// regular link, so middle-click and keyboard activation also open the source
+/// note alongside the current one.
+fn embed_open_link(encoded: &str, title: &str) -> String {
+    format!(
+        "<a class=\"markdown-embed-link\" href=\"/note/{}\" aria-label=\"Open {}\" title=\"Open {}\">{}</a>",
+        encoded,
+        esc(title),
+        esc(title),
+        EMBED_OPEN_ICON
+    )
+}
+
 /// Short, safe explanation inserted in place of an embed that cannot be expanded.
 fn embed_notice(root: &Path, path: &Path, title: &str, message: &str) -> String {
     let relative = path.strip_prefix(root).unwrap_or(path);
     let encoded = url_path(&normalized_rel(relative));
     format!(
-        "<section class=\"note-embed note-embed-error\"><div class=\"note-embed-title\"><a href=\"/note/{}\">{}</a></div><p>{}</p></section>",
+        "<section class=\"note-embed note-embed-error\">{}<div class=\"note-embed-title\"><a href=\"/note/{}\">{}</a></div><p>{}</p></section>",
+        embed_open_link(&encoded, title),
         encoded,
         esc(title),
         esc(message)
@@ -746,7 +763,8 @@ fn embed_note(root: &Path, index: &VaultIndex, path: &Path, scope: &mut EmbedSco
     scope.stack.pop();
     let encoded = url_path(&normalized_rel(relative));
     format!(
-        "<section class=\"note-embed\"><div class=\"note-embed-title\"><a href=\"/note/{}\">{}</a></div><div class=\"note-embed-body\">{}</div></section>",
+        "<section class=\"note-embed\">{}<div class=\"note-embed-title\"><a href=\"/note/{}\">{}</a></div><div class=\"note-embed-body\">{}</div></section>",
+        embed_open_link(&encoded, &title),
         encoded,
         esc(&title),
         content
@@ -1060,7 +1078,7 @@ fn rewrite_markdown_paths<'a>(
     }
 }
 
-fn split_frontmatter<'a>(source: &'a str) -> (String, &'a str) {
+fn split_frontmatter(source: &str) -> (String, &str) {
     let normalized = source.trim_start_matches('\u{feff}');
     let mut lines = normalized.split_inclusive('\n');
     let Some(first_line) = lines.next() else {
@@ -2906,6 +2924,13 @@ mod page_tests {
         assert!(html.contains("\"toggle-right-sidebar\":\"Alt+X\""));
         assert!(html.contains("<div>nav</div>"));
         assert!(html.contains("<p>body</p>"));
+        // The right-sidebar toggle is the far-right control, after the palette.
+        let palette = html.find("id=\"open-command-palette\"").unwrap();
+        let right_toggle = html.find("id=\"show-right-sidebar\"").unwrap();
+        assert!(palette < right_toggle);
+        assert!(html.contains("id=\"open-command-palette\""));
+        // The outline starts below the fixed control rail.
+        assert!(html.contains("calc(var(--top-rail) + 14px)"));
         for placeholder in [
             "__TITLE__",
             "__NAV__",
@@ -2989,6 +3014,14 @@ mod page_tests {
         assert!(
             html.contains("href=\"/note/B%2Emd\""),
             "embed title is missing"
+        );
+        assert!(
+            html.contains("class=\"markdown-embed-link\" href=\"/note/B%2Emd\""),
+            "embed open control is missing"
+        );
+        assert!(
+            html.contains("class=\"svg-icon lucide-maximize-2\""),
+            "embed open control is missing its icon"
         );
         assert!(
             html.contains("<strong>bold</strong>"),

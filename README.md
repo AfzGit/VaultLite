@@ -1,4 +1,4 @@
-# VaultLite 0.8.9
+# VaultLite 0.9.0
 
 VaultLite is a minimal, read-only browser for Obsidian vaults. It serves your vault on `127.0.0.1` and opens it in your default browser. The desktop launcher lets you choose a vault folder, optionally select a homepage note, and start or stop the local server.
 
@@ -61,7 +61,7 @@ GitHub Actions builds release binaries for:
 - macOS Intel (x86_64)
 - macOS Apple Silicon (aarch64)
 
-Push a version tag such as `v0.8.0` to build and attach archives to a GitHub Release. Builds can also be started manually from the Actions tab.
+Run the **Release** workflow from the Actions tab with a semantic version (for example `0.9.1`) to bump the version, update the changelog, tag the commit, build every archive, and publish a GitHub Release in one step. Pushing an already-prepared `vX.Y.Z` tag runs the same verification, build, and publishing steps.
 
 ## Features
 
@@ -69,7 +69,7 @@ Push a version tag such as `v0.8.0` to build and attach archives to a GitHub Rel
 - `[[document.pdf]]` opens the PDF in a new browser tab; the server marks PDF responses as inline so the browser viewer can display them.
 - Other local file links resolve into the vault. Image links open an image preview inside the VaultLite reading pane.
 - `![[image.png]]`, `![[image.png|Alt text]]`, and width hints such as `![[image.png|320]]` embed images in notes.
-- `![[Note]]` and `![[Note.md]]` embed the full body of another note inline. Embeds render Markdown and respect direct and indirect recursion: a note that embeds itself, or an embed chain that loops back, shows a "Recursive embed stopped" notice instead of hanging. Depth and total-size limits cap very large embed graphs. Embedding notes are re-rendered on each request so edits appear immediately.
+- `![[Note]]` and `![[Note.md]]` embed the full body of another note inline. Embeds render Markdown and respect direct and indirect recursion: a note that embeds itself, or an embed chain that loops back, shows a "Recursive embed stopped" notice instead of hanging. Depth and total-size limits cap very large embed graphs. Embedding notes are re-rendered on each request so edits appear immediately. Every embed has an Obsidian-style open control in its top-right corner that opens the source note.
 - Extensionless image embeds resolve by attachment filename stem, including dotted titles such as `1.04) Wudu (Ablution)`.
 - Markdown image and file links are resolved relative to the current note. Previously generated `127.0.0.1:<port>/file/...` links are redirected into the current viewer; `.md` files always render as notes.
 - Obsidian callouts such as `[!note]`, `[!warning]`, `[!tip]`, `[!success]`, and `[!quote]`, with collapsible `+` and `-` forms. Markdown links in callout titles are rendered as links.
@@ -80,7 +80,7 @@ Push a version tag such as `v0.8.0` to build and attach archives to a GitHub Rel
 - Command palette (`Ctrl+P`) with keyboard-navigable commands for sidebar toggles, search, theme and colour palettes, folder collapse/expand, text-size controls, wrapping, justified text, collapsing all table-of-contents headings to level 1, copying the current note, opening it in Obsidian, opening the config folder, and exiting VaultLite. The palette uses the same fuzzy ranking as file search. Every command binding is editable in `commands.conf`.
 - Dark and light themes. Dark is the default for new visitors, and the selected theme is saved in the browser.
 - Compact, collapsed frontmatter properties, filename heading, and a right-hand table of contents docked to the right edge like the file navigator. Both sidebars share the same default width, and the TOC is a full-height panel that never overlaps the note. It can be widened or narrowed like the left sidebar, and a toolbar toggle collapses all headings to level 1. All headings stay expanded by default; collapsing a section and expanding it again reveals only the next level each time, and clicking a heading scrolls it to the top (keeping it there while lazy images settle) and expands its subheadings in the outline. The heading in view is highlighted as you scroll, and every outline section has an expand/collapse arrow.
-- Responsive layout: below 1024 px the TOC moves under the note, and below 760 px the file navigator becomes a touch-friendly drawer with a backdrop. When the right sidebar is hidden, its reopen button stays visible in the top-right control rail immediately left of the command palette button.
+- Responsive layout: below 1024 px the TOC moves under the note, and below 760 px the file navigator becomes a touch-friendly drawer with a backdrop. The right-sidebar toggle is the far-right control in the top-right rail, stays visible while the panel is open or hidden, and switches between the open and close icons. Outline content starts below the rail, so the controls never obscure TOC headings.
 - Icon-only controls with tooltips: collapse folders, resize or hide the left sidebar, independently wrap the left file tree and right TOC, and increase/decrease note-body font size. Font size changes do not affect either sidebar.
 - Fast in-page navigation: switching notes, image previews, Bases views, and canvases fetches only the content fragment and preserves the application shell and file tree. Back/Forward works between these views. The bottom link-relations section is a two-column table: inbound backlinks on the left and outgoing note links on the right. Both columns show compact inline note-name links without folder paths.
 - The vault is indexed once at startup for constant-time path/name/stem lookups. Rendered notes are cached in memory (bounded to approximately 32 MiB) and refreshed when file size or modification time changes. Images are served as raw bytes from a dedicated `/asset/` endpoint for both Markdown/Obsidian embeds and the standalone image preview; legacy `/file/` image URLs remain compatible. Images and other static files receive browser cache headers.
@@ -169,18 +169,20 @@ MIT
 
 ## GitHub release process
 
-1. Create a GitHub repository and push this project to its `main` branch.
-2. Confirm the **CI** workflow passes on the Actions tab.
-3. Update `version` in `Cargo.toml`, the README heading, and `CHANGELOG.md`.
-4. Commit the version bump and push it.
-5. Create and push a matching version tag:
+Releases use semantic versions (`MAJOR.MINOR.PATCH`) and tags of the form `vX.Y.Z`.
 
-   ```sh
-   git tag v0.8.2
-   git push origin v0.8.2
-   ```
+1. **CI** runs on every pull request and every push to `main`: formatting, Clippy with warnings denied, tests, a debug build, and JavaScript/release-script syntax checks.
+2. Add release notes under `## Unreleased` in `CHANGELOG.md` as changes land.
+3. Open **Actions → Release → Run workflow** and enter the new version (for example `0.9.1`). The workflow:
+   - promotes the `Unreleased` entries into a dated `## [0.9.1]` section,
+   - updates `Cargo.toml`, `Cargo.lock`, and the README version heading,
+   - commits the release as `chore(release): v0.9.1` and creates the matching annotated tag,
+   - verifies that the tag, Cargo version, README, and changelog agree,
+   - builds Linux x86_64, Windows x86_64, macOS Intel, and macOS Apple Silicon archives,
+   - publishes a GitHub Release whose notes are that version's changelog section, with all archives attached.
 
-6. The **Build desktop binaries** workflow builds Linux, Windows, Intel macOS, and Apple Silicon macOS archives and attaches them to a GitHub Release with generated release notes.
+   The workflow fails if `Unreleased` is empty, so every version has documented changes.
+4. To release from a local machine instead, run `node scripts/prepare-release.mjs 0.9.1`, commit the version bump, and push the `v0.9.1` tag. The tag-triggered path performs the same verification, build, and publish steps.
 
 The workflows need the repository's default `GITHUB_TOKEN`; no third-party secrets are required. In repository Settings → Actions → General, allow GitHub Actions to create and approve releases if your organization has restricted workflow permissions.
 

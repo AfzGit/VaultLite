@@ -1,5 +1,7 @@
 ## Unreleased
 
+## [0.9.0] - 2026-11-12
+
 - Fix the right sidebar layout so the table of contents always occupies its own grid column and cannot overlap the note or the top control rail.
 - Dock the heading sidebar to the right viewport edge as a full-height panel, matching the file navigator's positioning.
 - Keep the right-sidebar reopen button in the top-right control rail when the sidebar is hidden.
@@ -26,6 +28,11 @@
 - Add responsive mobile support: off-canvas navigator with backdrop, stacked TOC and backlinks, touch-sized controls, and no horizontal overflow.
 - Make the file tree more compact and replace emoji icons with an inline SVG icon set.
 - Split the browser assets out of `main.rs` and add command-line tests for shortcut configuration.
+- Add an Obsidian-style open control to the top-right corner of every embedded note, with the Lucide `maximize-2` icon, that opens the source note.
+- Keep the outline clear of the fixed top-right controls by reserving extra space below the control rail.
+- Make the right-sidebar toggle the far-right control in the global toolbar, so the command palette is no longer rightmost, and let it open and close the panel in one place.
+- Add a `Release` GitHub Actions workflow that bumps the version, promotes the unreleased changelog, tags the commit, builds all platform archives, and publishes a GitHub Release using that version's changelog section.
+- Test the release helper scripts in CI, run Clippy with warnings denied, and validate the browser JavaScript syntax.
 
 ## 0.8.9
 

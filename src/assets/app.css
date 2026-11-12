@@ -317,6 +317,7 @@ td, th { border: 1px solid var(--line); padding: 6px 10px; }
 
 /* Embedded notes */
 .note-embed {
+  position: relative;
   margin: 1.1em 0;
   padding: 10px 14px 6px;
   border: 1px solid var(--line);
@@ -324,7 +325,27 @@ td, th { border: 1px solid var(--line); padding: 6px 10px; }
   border-radius: 8px;
   background: color-mix(in srgb, var(--panel) 70%, var(--bg));
 }
-.note-embed-title { margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.note-embed-title { margin: 0 0 6px; padding-right: 28px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+/* Obsidian-style open control in the embed's top-right corner. It stays out of
+   the way until the embed is hovered or the link receives keyboard focus. */
+.markdown-embed-link {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+.markdown-embed-link svg { width: 15px; height: 15px; }
+.markdown-embed-link:hover { color: var(--fg); background: var(--hover); opacity: 1; }
+.note-embed:hover > .markdown-embed-link,
+.markdown-embed-link:focus-visible { opacity: 1; }
 .note-embed-title a { color: inherit; text-decoration: none; }
 .note-embed-title a:hover { color: var(--fg); }
 .note-embed-body > :first-child { margin-top: 0; }
@@ -346,11 +367,13 @@ aside {
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
-  padding: calc(var(--top-rail) + 2px) 12px 18px;
+  /* Keep the first outline row comfortably below the fixed view controls so
+     the toolbar can never obscure the heading label or its buttons. */
+  padding: calc(var(--top-rail) + 14px) 12px 18px;
   border-left: 1px solid var(--line);
   background: var(--panel);
 }
-.toc-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.toc-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin: 4px 0 8px; }
 .toc-heading b { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg); margin: 0; white-space: nowrap; }
 .toc-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px; }
 .toc-actions .icon-button { width: 24px; height: 24px; min-width: 24px; }

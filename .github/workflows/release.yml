@@ -1,0 +1,211 @@
+name: Release
+
+# Two supported entry points:
+#   1. Run this workflow manually with a version (Actions -> Release). It bumps
+#      the version, promotes the changelog, commits, tags, builds, and publishes.
+#   2. Push an already-prepared semantic version tag (vX.Y.Z). It verifies the
+#      version files, builds, and publishes the same way.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semantic version to release (for example 0.9.1)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Bump version and changelog
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Promote unreleased changelog entries
+        id: release
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${VERSION#v}"
+          node scripts/prepare-release.mjs "$VERSION"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and tag the release
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${VERSION#v}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml Cargo.lock README.md CHANGELOG.md
+          git commit -m "chore(release): v$VERSION"
+          git tag -a "v$VERSION" -m "VaultLite v$VERSION"
+          git push origin HEAD:main
+          git push origin "v$VERSION"
+
+  verify:
+    name: Verify tag files
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check version, README, and changelog
+        run: node scripts/verify-release.mjs "$GITHUB_REF_NAME"
+
+  build:
+    name: ${{ matrix.name }}
+    needs: [prepare, verify]
+    if: always() && (needs.prepare.result == 'success' || needs.verify.result == 'success')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            binary: vaultlite
+            suffix: linux-x86_64.tar.gz
+          - name: windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary: vaultlite.exe
+            suffix: windows-x86_64.zip
+          - name: macos-x86_64
+            os: macos-13
+            target: x86_64-apple-darwin
+            binary: vaultlite
+            suffix: macos-x86_64.tar.gz
+          - name: macos-aarch64
+            os: macos-14
+            target: aarch64-apple-darwin
+            binary: vaultlite
+            suffix: macos-aarch64.tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && needs.prepare.outputs.tag || github.ref }}
+
+      - name: Install native rendering dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libxkbcommon-dev libwayland-dev libx11-dev libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libgl1-mesa-dev
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.87.0
+          targets: ${{ matrix.target }}
+          components: rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Resolve version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version="${{ needs.prepare.outputs.tag }}"
+          else
+            version="$GITHUB_REF_NAME"
+          fi
+          echo "VERSION=${version#v}" >> "$GITHUB_ENV"
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Test (Linux)
+        if: runner.os == 'Linux'
+        run: cargo test --all-targets --locked
+
+      - name: Release build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" dist/
+          cp README.md LICENSE CHANGELOG.md dist/
+          tar -czf "vaultlite-${VERSION}-${{ matrix.suffix }}" -C dist .
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item "target/${{ matrix.target }}/release/${{ matrix.binary }}" dist/
+          Copy-Item README.md, LICENSE, CHANGELOG.md dist/
+          Compress-Archive -Path dist/* -DestinationPath "vaultlite-$env:VERSION-${{ matrix.suffix }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: vaultlite-*
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub release
+    needs: [prepare, verify, build]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && needs.prepare.outputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Write release notes from the changelog
+        id: notes
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            tag="${{ needs.prepare.outputs.tag }}"
+          else
+            tag="$GITHUB_REF_NAME"
+          fi
+          node scripts/changelog-section.mjs "$tag" > release-notes.md
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.notes.outputs.tag }}
+          name: "VaultLite ${{ steps.notes.outputs.tag }}"
+          body_path: release-notes.md
+          files: dist/*
+          fail_on_unmatched_files: true
+          generate_release_notes: false
+          draft: false
+          prerelease: ${{ contains(steps.notes.outputs.tag, '-') }}
