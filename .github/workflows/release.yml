@@ -19,9 +19,10 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+# No workflow-level concurrency group: a run that is stuck waiting for a
+# retired runner image must never block the next release attempt. Publishing is
+# idempotent for a given tag because the release notes body and assets are
+# derived from the same commit.
 
 jobs:
   prepare:
