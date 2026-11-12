@@ -2,6 +2,8 @@
 
 VaultLite is a minimal, read-only browser for Obsidian vaults. It serves your vault on `127.0.0.1` and opens it in your default browser. The desktop launcher lets you choose a vault folder, optionally select a homepage note, and start or stop the local server.
 
+<img width="1625" height="1044" alt="image" src="https://github.com/user-attachments/assets/450f3c16-a64e-45bc-aee8-c884c14b8fd2" />
+
 ## Desktop app (recommended)
 
 Download the archive for your operating system from the [GitHub Releases](../../releases) page, extract it, and run the `vaultlite` executable (`vaultlite.exe` on Windows).
