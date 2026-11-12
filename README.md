@@ -1,106 +1,106 @@
-# VaultLite 0.9.0
+# VaultLite
 
-VaultLite is a minimal, read-only browser for Obsidian vaults. It serves your vault on `127.0.0.1` and opens it in your default browser. The desktop launcher lets you choose a vault folder, optionally select a homepage note, and start or stop the local server.
+**VaultLite** is a lightweight, read-only browser for [Obsidian](https://obsidian.md) vaults. It serves a vault locally at `127.0.0.1` and opens it in your default browser—without uploading your notes or exposing the server to your local network.
 
-<img width="1625" height="1044" alt="image" src="https://github.com/user-attachments/assets/450f3c16-a64e-45bc-aee8-c884c14b8fd2" />
+The desktop launcher lets you choose a vault, optionally select a homepage note, and start or stop the local server. For scripts and headless workflows, VaultLite also provides a command-line mode.
 
-## Desktop app (recommended)
+- **CLI memory usage:** less than `8 MB`
+- **Desktop launcher memory usage:** approximately `70 MB`
+- **Access:** local machine only (`127.0.0.1`)
+- **Mode:** read-only
 
-Download the archive for your operating system from the [GitHub Releases](../../releases) page, extract it, and run the `vaultlite` executable (`vaultlite.exe` on Windows).
+![VaultLite screenshot](https://github.com/user-attachments/assets/450f3c16-a64e-45bc-aee8-c884c14b8fd2)
 
-The small launcher window provides:
+## Getting started
 
-- **Choose vault** — select an Obsidian vault folder using the native folder picker. The picker starts in the last-used location.
-- **Recent vaults** — reopen any of the last eight selected vaults with one click.
-- **Homepage picker** — browse for a Markdown homepage inside the selected vault instead of typing its path.
-- **Recent homepages** — reuse any of the last eight selected homepage entries.
-- **Homepage note** — optionally enter a Markdown file path relative to that vault, such as `Home.md`.
-- **Start server** — starts the local read-only server and opens the vault in your default browser.
-- **Open browser** — reopens the current VaultLite URL if you closed the tab.
-- **Stop server** — stops serving the vault. Closing the launcher also stops the server.
+### Desktop application (recommended)
 
-The server binds only to `127.0.0.1`; it is not exposed to your LAN and does not upload vault contents.
+1. Open the [GitHub Releases](../../releases) page.
+2. Download the archive for your operating system.
+3. Extract the archive and run `vaultlite` (`vaultlite.exe` on Windows).
+4. Choose your Obsidian vault and, optionally, a homepage note.
+5. Select **Start server** to open the vault in your default browser.
 
-## Build from source
+The launcher includes the following controls:
 
-Install Rust 1.87.0 (the repository pins this toolchain in `rust-toolchain.toml`) and the native desktop build prerequisites for your platform, then run:
+| Control | Description |
+| --- | --- |
+| **Choose vault** | Select a vault folder with the native folder picker. It starts in the last-used location. |
+| **Recent vaults** | Reopen any of the last eight selected vaults. |
+| **Homepage picker** | Choose a Markdown homepage from the selected vault. |
+| **Recent homepages** | Reuse any of the last eight selected homepage entries. |
+| **Homepage note** | Optionally enter a path relative to the vault, such as `Home.md`. |
+| **Start server** | Start the local read-only server and open the vault in your default browser. |
+| **Open browser** | Reopen the current VaultLite URL if you closed the browser tab. |
+| **Stop server** | Stop serving the vault. Closing the launcher also stops the server. |
 
-```sh
-cargo build --release
-```
-
-The executable is written to `target/release/vaultlite` (or `target/release/vaultlite.exe` on Windows). Running it with no arguments opens the desktop launcher.
-
-### Linux build prerequisites
-
-On Debian/Ubuntu:
-
-```sh
-sudo apt-get install pkg-config libxkbcommon-dev libwayland-dev libx11-dev \
-  libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libgl1-mesa-dev
-```
-
-## Command-line mode
-
-The original CLI workflow remains available for scripts and headless use:
-
-```sh
-vaultlite --vault /path/to/vault
-```
-
-Optional arguments:
-
-- `--index path/to/Home.md` — render the supplied note as the homepage.
-- `--port 8080` — use a fixed port. By default VaultLite selects an available local port.
-- `--help` — show command-line usage.
-
-## Cross-platform builds
-
-GitHub Actions builds release binaries for:
-
-- Linux x86_64
-- Windows x86_64
-- macOS Intel (x86_64)
-- macOS Apple Silicon (aarch64)
-
-Run the **Release** workflow from the Actions tab with a semantic version (for example `0.9.1`) to bump the version, update the changelog, tag the commit, build every archive, and publish a GitHub Release in one step. Pushing an already-prepared `vX.Y.Z` tag runs the same verification, build, and publishing steps.
+The server binds only to `127.0.0.1`. It is not accessible from other devices on your LAN, and vault contents are not uploaded.
 
 ## Features
 
-- `[[Note]]`, `[[folder/Note]]`, and `[[Note|Alias]]` links.
-- `[[document.pdf]]` opens the PDF in a new browser tab; the server marks PDF responses as inline so the browser viewer can display them.
-- Other local file links resolve into the vault. Image links open an image preview inside the VaultLite reading pane.
-- `![[image.png]]`, `![[image.png|Alt text]]`, and width hints such as `![[image.png|320]]` embed images in notes.
-- `![[Note]]` and `![[Note.md]]` embed the full body of another note inline. Embeds render Markdown and respect direct and indirect recursion: a note that embeds itself, or an embed chain that loops back, shows a "Recursive embed stopped" notice instead of hanging. Depth and total-size limits cap very large embed graphs. Embedding notes are re-rendered on each request so edits appear immediately. Every embed has an Obsidian-style open control in its top-right corner that opens the source note.
-- Extensionless image embeds resolve by attachment filename stem, including dotted titles such as `1.04) Wudu (Ablution)`.
-- Markdown image and file links are resolved relative to the current note. Previously generated `127.0.0.1:<port>/file/...` links are redirected into the current viewer; `.md` files always render as notes.
-- Obsidian callouts such as `[!note]`, `[!warning]`, `[!tip]`, `[!success]`, and `[!quote]`, with collapsible `+` and `-` forms. Markdown links in callout titles are rendered as links.
-- `.base` files open as in-browser Bases previews rather than downloads. The first configured view is displayed as a table, list, or card-style grid. Common file fields and simple `note.<property>` frontmatter columns are supported. Filter expressions, formulas, grouping, sorting, and the full Obsidian Bases expression language are not evaluated.
-- `.canvas` files open in a read-only board viewer. Text, group, file, and link nodes render at their saved coordinates with connecting edges, whether drawn from the toolbar or by holding the left mouse button to drag the board, and the board can be zoomed or fitted to the window. Zooming with `Ctrl` + scroll keeps the point beneath the cursor fixed. Text nodes render basic Markdown such as **bold**, *italic*, `code`, strikethrough, highlights, lists, and headings.
-- Compact nested directory navigator with an inline SVG icon set: folders (closed/open), Markdown notes, Bases, canvases, images, and other files. File rows use a single line with ellipsis to maximise visible content; optional wrapping is available from the toolbar or command palette.
-- Fuzzy-by-default left search matches the whole filename with typo tolerance, subsequence matching, and multi-word queries, and ranks the closest matches first. Folder names are searchable too, but filename matches rank higher. Folders are shown only as the hierarchy for matching files. A separate search field filters headings in the current note. Press `/` or `Ctrl+O` to focus file search; Escape clears the active search.
-- Command palette (`Ctrl+P`) with keyboard-navigable commands for sidebar toggles, search, theme and colour palettes, folder collapse/expand, text-size controls, wrapping, justified text, collapsing all table-of-contents headings to level 1, copying the current note, opening it in Obsidian, opening the config folder, and exiting VaultLite. The palette uses the same fuzzy ranking as file search. Every command binding is editable in `commands.conf`.
-- Dark and light themes. Dark is the default for new visitors, and the selected theme is saved in the browser.
-- Compact, collapsed frontmatter properties, filename heading, and a right-hand table of contents docked to the right edge like the file navigator. Both sidebars share the same default width, and the TOC is a full-height panel that never overlaps the note. It can be widened or narrowed like the left sidebar, and a toolbar toggle collapses all headings to level 1. All headings stay expanded by default; collapsing a section and expanding it again reveals only the next level each time, and clicking a heading scrolls it to the top (keeping it there while lazy images settle) and expands its subheadings in the outline. The heading in view is highlighted as you scroll, and every outline section has an expand/collapse arrow.
-- Responsive layout: below 1024 px the TOC moves under the note, and below 760 px the file navigator becomes a touch-friendly drawer with a backdrop. The right-sidebar toggle is the far-right control in the top-right rail, stays visible while the panel is open or hidden, and switches between the open and close icons. Outline content starts below the rail, so the controls never obscure TOC headings.
-- Icon-only controls with tooltips: collapse folders, resize or hide the left sidebar, independently wrap the left file tree and right TOC, and increase/decrease note-body font size. Font size changes do not affect either sidebar.
-- Fast in-page navigation: switching notes, image previews, Bases views, and canvases fetches only the content fragment and preserves the application shell and file tree. Back/Forward works between these views. The bottom link-relations section is a two-column table: inbound backlinks on the left and outgoing note links on the right. Both columns show compact inline note-name links without folder paths.
-- The vault is indexed once at startup for constant-time path/name/stem lookups. Rendered notes are cached in memory (bounded to approximately 32 MiB) and refreshed when file size or modification time changes. Images are served as raw bytes from a dedicated `/asset/` endpoint for both Markdown/Obsidian embeds and the standalone image preview; legacy `/file/` image URLs remain compatible. Images and other static files receive browser cache headers.
-- CommonMark plus tables, strikethrough, task lists, and footnotes.
+### Notes and links
 
-Wiki links resolve relative to the current note first, then relative to the vault. A case-insensitive filename fallback is also used. The directory index is built at startup; restart VaultLite after adding or renaming vault files so its navigator and link index are refreshed. VaultLite is intentionally a lightweight viewer rather than a complete Obsidian renderer. Plugins, Dataview, full Bases evaluation, graph features, editing, and live reload are not implemented.
+- Renders CommonMark Markdown, including tables, strikethrough, task lists, and footnotes.
+- Supports Obsidian wiki links: `[[Note]]`, `[[folder/Note]]`, and `[[Note|Alias]]`.
+- Resolves wiki links relative to the current note first, then relative to the vault. A case-insensitive filename fallback is also supported.
+- Opens `[[document.pdf]]` in a new browser tab. PDF responses are served inline so the browser's PDF viewer can display them.
+- Resolves other local file links within the vault. Image links open in the VaultLite reading pane.
+- Supports Markdown image and file links relative to the current note, including destinations with spaces, angle-bracket destinations, and optional Markdown link titles.
+- Supports image embeds such as `![[image.png]]`, `![[image.png|Alt text]]`, and width hints such as `![[image.png|320]]`.
+- Resolves extensionless image embeds by attachment filename stem, including dotted titles such as `1.04) Wudu (Ablution)`.
+- Supports note embeds with `![[Note]]` and `![[Note.md]]`. Embedded notes render inline as Markdown and include a control for opening the source note.
+- Detects direct and indirect recursive note embeds and displays a **Recursive embed stopped** notice instead of entering an infinite loop. Depth and total-size limits protect against very large embed graphs.
+- Re-renders embedded notes on each request so edits to their source files appear immediately.
+
+### Bases and Canvas
+
+- Opens `.base` files as in-browser previews rather than downloads. The first configured view is displayed as a table, list, or card grid.
+- Supports common file fields and simple `note.<property>` frontmatter columns in Bases previews.
+- Opens `.canvas` files in a read-only board viewer. Text, group, file, and link nodes are drawn at their saved coordinates, with connecting edges.
+- Supports Canvas board dragging, zooming, and fit-to-window controls. `Ctrl` + scroll zooms around the point beneath the cursor.
+- Renders basic Markdown in Canvas text nodes, including headings, lists, **bold**, *italic*, `code`, strikethrough, and highlights.
+
+### Navigation and search
+
+- Provides a compact, nested file navigator with icons for folders, Markdown notes, Bases, canvases, images, and other files.
+- Uses fuzzy filename search by default, with typo tolerance, subsequence matching, and multi-word queries. Closer filename matches rank higher than folder-name matches.
+- Shows matching files in their folder hierarchy. Folder names are searchable, but filename matches receive higher priority.
+- Includes a separate search field for headings in the current note.
+- Press `/` or `Ctrl+O` to focus file search. Press `Escape` to clear the active search.
+- Includes a right-hand table of contents (TOC) with expandable and collapsible sections. The current heading is highlighted while scrolling.
+- Clicking a TOC heading scrolls it to the top and expands its subheadings. Collapsing and reopening a section reveals the next heading level.
+- Keeps the TOC and file navigator in separate, full-height sidebars. Both sidebars can be resized independently.
+- Provides a toolbar control to collapse all TOC headings to level 1.
+- Displays inbound backlinks and outgoing note links in a two-column section at the bottom of each note.
+
+### Reading and layout
+
+- Includes dark and light themes. Dark mode is the default for new visitors, and the selected theme is saved in the browser.
+- Provides responsive layouts: below 1024 px, the TOC moves below the note; below 760 px, the file navigator becomes a touch-friendly drawer with a backdrop.
+- Keeps the right-sidebar toggle visible in the top-right rail whether the TOC is open or closed.
+- Provides icon-only controls with tooltips for folder expansion, sidebar visibility and resizing, independent wrapping of the file tree and TOC, and note-body text size.
+- Keeps note font-size changes separate from sidebar text sizes.
+- Supports optional filename and TOC wrapping, as well as justified note text.
+- Preserves the application shell and file tree when navigating between notes, image previews, Bases, and Canvas views. These view changes fetch only the content fragment.
+- Supports browser Back and Forward navigation between views.
+
+### Performance and file handling
+
+- Indexes the vault once at startup for constant-time path, filename, and stem lookups.
+- Caches rendered notes in memory, bounded to approximately 32 MiB. Cached notes are refreshed when their file size or modification time changes.
+- Serves images as raw bytes through a dedicated `/asset/` endpoint for embeds and standalone image previews. Legacy `/file/` image URLs remain compatible.
+- Adds browser cache headers to images and other static files.
+- Redirects previously generated `127.0.0.1:<port>/file/...` links into the current viewer. `.md` files are always rendered as notes.
 
 ## Command palette and keyboard shortcuts
 
-Press `Ctrl+P` (`Cmd+P` on macOS) to open the command palette. Type to filter the
-commands that VaultLite can perform, use `↑`/`↓` to move through them, `Enter`
-to run one, and `Escape` to close the palette. `Ctrl+O` opens the file search.
+Press `Ctrl+P` (`Cmd+P` on macOS) to open the command palette. Type to filter commands, use `↑` and `↓` to navigate, press `Enter` to run a command, and press `Escape` to close the palette.
 
-The default bindings are:
+Press `Ctrl+O` to open file search.
 
-| Command | Default |
+| Command | Default shortcut |
 | --- | --- |
-| Open command palette | `Ctrl+P` |
+| Open command palette | `Ctrl+P` (`Cmd+P` on macOS) |
 | Search files | `Ctrl+O` |
 | Toggle left sidebar | `Alt+Z` |
 | Toggle right sidebar | `Alt+X` |
@@ -114,25 +114,31 @@ The default bindings are:
 | Toggle TOC wrapping | `Alt+Shift+W` |
 | Choose colour palette | `Alt+P` |
 | Go to vault home | `Alt+H` |
-| Collapse all headings to level 1 | palette only |
-| Toggle justified text | palette only |
-| Copy note | palette only |
-| Open note in Obsidian | palette only |
-| Open VaultLite config folder | palette only |
-| Exit VaultLite and stop server | palette only |
 
-The six palette-only commands have no default shortcut so they cannot be
-triggered accidentally. Assign them a binding in `commands.conf` if you want a
-keyboard shortcut.
+The following commands are available from the palette and have no default shortcut:
 
-Bindings live in `commands.conf`, next to `launcher.conf`:
+- Collapse all headings to level 1
+- Toggle justified text
+- Copy the current note
+- Open the current note in Obsidian
+- Open the VaultLite configuration folder
+- Exit VaultLite and stop the server
 
-- Windows: `%APPDATA%\vaultlite\commands.conf`
-- macOS: `~/Library/Application Support/vaultlite/commands.conf`
-- Linux: `$XDG_CONFIG_HOME/vaultlite/commands.conf`, or `~/.config/vaultlite/commands.conf`
+You can assign shortcuts to these commands in `commands.conf`. This also lets you change or disable existing bindings.
 
-The file is created with documented defaults on first run. Edit the `[commands]`
-section and restart VaultLite to apply changes:
+### Shortcut configuration
+
+`commands.conf` is stored next to `launcher.conf`:
+
+| Platform | Location |
+| --- | --- |
+| Windows | `%APPDATA%\vaultlite\commands.conf` |
+| macOS | `~/Library/Application Support/vaultlite/commands.conf` |
+| Linux | `$XDG_CONFIG_HOME/vaultlite/commands.conf`, or `~/.config/vaultlite/commands.conf` |
+
+The file is created with documented defaults on first run. Edit the `[commands]` section and restart VaultLite to apply changes.
+
+Example:
 
 ```ini
 [commands]
@@ -140,75 +146,154 @@ toggle-left-sidebar = Ctrl+Shift+L
 toggle-right-sidebar = Alt+X
 open-command-palette = Ctrl+P
 open-search = Ctrl+O
+
 # Use "off" to disable a command's shortcut.
 choose-palette = off
-# Palette-only commands can also be bound:
+
+# Palette-only commands can also be assigned shortcuts.
 copy-note = Alt+Shift+C
 open-in-obsidian = Alt+Shift+O
 ```
 
-Set `VAULTLITE_COMMANDS_FILE` to use a different file, for example when running
-from a portable directory or in tests.
+Set `VAULTLITE_COMMANDS_FILE` to load the configuration from a different location, for example when running from a portable directory or in tests.
 
-## Architecture
+## Command-line mode
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for an overview of the server, rendering
-pipeline, front-end modules, configuration flow, security model, and the quirks
-worth knowing before changing the code.
+The CLI remains available for scripts and headless workflows:
 
-## Dependencies
+```sh
+vaultlite --vault /path/to/vault
+```
 
-The desktop launcher uses `eframe` with only its OpenGL renderer and default fonts enabled. Release builds strip symbols, use thin LTO and a single codegen unit to reduce the shipped executable size. The folder picker uses `tinyfiledialogs`, avoiding the heavier asynchronous dialog stack. Optional eframe integrations (Wayland renderer, web screen reader and persistence) are disabled. The local server remains based on `tiny_http`; the browser is launched using native operating-system commands.
+### Options
 
-The launcher uses Eframe 0.30 with only the OpenGL renderer and X11 integration enabled. This avoids the newer Eframe dependency set that selected image 0.25.10 and ICU 2.4 (both requiring Rust 1.88). The unused direct URL/IDNA/image dependencies have been removed. `.cargo/config.toml` asks Cargo to prefer dependency versions compatible with the package MSRV when resolving a fresh lockfile. CI builds with the pinned Rust 1.87.0 toolchain.
+| Option | Description |
+| --- | --- |
+| `--vault <path>` | Path to the Obsidian vault. |
+| `--index <path>` | Optional homepage note path relative to the vault, such as `Home.md`. |
+| `--port <port>` | Use a fixed port, for example `8080`. By default, VaultLite selects an available local port. |
+| `--help` | Display command-line usage. |
 
-On Windows, the executable is built as a GUI-subsystem application, so double-clicking it does not leave a console window open. When CLI arguments are supplied, VaultLite attaches to the invoking terminal (or allocates a console if launched directly), preserving command-line diagnostics.
+Running `vaultlite` without arguments opens the desktop launcher.
 
-## License
+## Build from source
 
-MIT
+VaultLite pins Rust `1.87.0` in `rust-toolchain.toml`. Install that toolchain and the native build prerequisites for your operating system, then run:
 
+```sh
+cargo build --release
+```
 
-## GitHub release process
+The executable is written to:
 
-Releases use semantic versions (`MAJOR.MINOR.PATCH`) and tags of the form `vX.Y.Z`.
+- Linux and macOS: `target/release/vaultlite`
+- Windows: `target/release/vaultlite.exe`
 
-1. **CI** runs on every pull request and every push to `main`: formatting, Clippy with warnings denied, tests, a debug build, and JavaScript/release-script syntax checks.
-2. Add release notes under `## Unreleased` in `CHANGELOG.md` as changes land.
-3. Open **Actions → Release → Run workflow** and enter the new version (for example `0.9.1`). The workflow:
-   - promotes the `Unreleased` entries into a dated `## [0.9.1]` section,
-   - updates `Cargo.toml`, `Cargo.lock`, and the README version heading,
-   - commits the release as `chore(release): v0.9.1` and creates the matching annotated tag,
-   - verifies that the tag, Cargo version, README, and changelog agree,
-   - builds Linux x86_64, Windows x86_64, macOS Intel, and macOS Apple Silicon archives,
-   - publishes a GitHub Release whose notes are that version's changelog section, with all archives attached.
+### Linux prerequisites
 
-   The workflow fails if `Unreleased` is empty, so every version has documented changes.
-4. To release from a local machine instead, run `node scripts/prepare-release.mjs 0.9.1`, commit the version bump, and push the `v0.9.1` tag. The tag-triggered path performs the same verification, build, and publish steps.
+On Debian or Ubuntu, install the required packages:
 
-The workflows need the repository's default `GITHUB_TOKEN`; no third-party secrets are required. In repository Settings → Actions → General, allow GitHub Actions to create and approve releases if your organization has restricted workflow permissions.
+```sh
+sudo apt-get install pkg-config libxkbcommon-dev libwayland-dev libx11-dev \
+  libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libgl1-mesa-dev
+```
+
+## Cross-platform releases
+
+GitHub Actions builds release archives for:
+
+- Linux x86_64
+- Windows x86_64
+- macOS Intel (x86_64)
+- macOS Apple Silicon (aarch64)
+
+### Release process
+
+Releases follow semantic versioning (`MAJOR.MINOR.PATCH`) and use tags in the form `vX.Y.Z`.
+
+1. CI runs on every pull request and every push to `main`. It checks formatting, runs Clippy with warnings denied and the test suite, performs a debug build, and checks JavaScript and release-script syntax.
+2. Add release notes under `## Unreleased` in `CHANGELOG.md` as changes are merged.
+3. In GitHub, open **Actions → Release → Run workflow** and enter the release version, such as `0.9.1`.
+4. The workflow then:
+   - promotes the `Unreleased` entries into a dated version section in `CHANGELOG.md`;
+   - updates `Cargo.toml`, `Cargo.lock`, and the README version heading;
+   - commits the release as `chore(release): vX.Y.Z` and creates the matching annotated tag;
+   - verifies that the tag, Cargo version, README, and changelog agree;
+   - builds archives for all four supported targets; and
+   - publishes a GitHub Release using that version's changelog section as the release notes, with all archives attached.
+
+The workflow fails if `Unreleased` is empty, ensuring that each release has documented changes.
+
+To prepare a release locally instead, run:
+
+```sh
+node scripts/prepare-release.mjs 0.9.1
+```
+
+Commit the version bump and push the `v0.9.1` tag. The tag-triggered workflow performs the same verification, build, and publishing steps.
+
+The workflows use the repository's default `GITHUB_TOKEN`; no third-party secrets are required. If your organization restricts workflow permissions, enable permission for GitHub Actions to create and approve releases under **Settings → Actions → General**.
 
 ### Windows behavior
 
-The desktop launcher is compiled with the Windows GUI subsystem and therefore does not create a terminal window when started normally. CLI mode remains available when arguments are supplied; it attaches to the current console when launched from PowerShell/CMD, and opens a console when started directly with CLI arguments.
-
-### Reporting issues
-
-When filing a bug, include your operating system, VaultLite version, Rust version if built from source, and the steps needed to reproduce it. Do not attach private vault contents; use a minimal sample vault instead.
-
+The Windows executable is built with the GUI subsystem, so starting it normally does not open a terminal window. When CLI arguments are supplied, VaultLite attaches to the invoking PowerShell or Command Prompt session. When launched directly with CLI arguments, it opens a console so command-line diagnostics remain available.
 
 ## Launcher preferences
 
-The desktop launcher remembers the last selected vault, up to eight recent vault folders, the last homepage entry, and up to eight recent homepage entries. These preferences are stored locally in a small `launcher.conf` file:
+The desktop launcher remembers the last selected vault, up to eight recent vault folders, the last homepage entry, and up to eight recent homepage entries. These settings are stored locally in `launcher.conf`:
 
-- Windows: `%APPDATA%\\vaultlite\\launcher.conf`
-- macOS: `~/Library/Application Support/vaultlite/launcher.conf`
-- Linux: `$XDG_CONFIG_HOME/vaultlite/launcher.conf`, or `~/.config/vaultlite/launcher.conf`
+| Platform | Location |
+| --- | --- |
+| Windows | `%APPDATA%\vaultlite\launcher.conf` |
+| macOS | `~/Library/Application Support/vaultlite/launcher.conf` |
+| Linux | `$XDG_CONFIG_HOME/vaultlite/launcher.conf`, or `~/.config/vaultlite/launcher.conf` |
 
-Only folder paths and homepage paths are stored. Vault contents are not copied or uploaded. Missing recent folders are ignored when the launcher starts. Keyboard shortcut overrides are stored separately in `commands.conf` in the same directory; see [Command palette and keyboard shortcuts](#command-palette-and-keyboard-shortcuts).
+Only vault folder paths and homepage paths are stored. Vault contents are not copied or uploaded. Missing recent folders are ignored at startup.
 
+A folder is accepted as a vault only if it contains an `.obsidian` directory. Invalid folders are not added to the recent list, and saved entries are revalidated when the launcher starts.
 
-Folders in the navigator start collapsed by default. Markdown links and image destinations may contain spaces in filenames; angle-bracket destinations and optional Markdown link titles are also handled.
+Keyboard shortcut overrides are stored separately in `commands.conf` in the same configuration directory. See [Shortcut configuration](#shortcut-configuration).
 
+## Known limitations
 
-Vault selections are persisted as newline-separated entries in the launcher preferences file. A folder is accepted as a vault only when it contains an `.obsidian` directory; invalid folders are not saved to the recent list. Existing saved entries are revalidated on startup.
+VaultLite is designed to be a lightweight, read-only viewer, not a complete Obsidian replacement. The following are not implemented:
+
+- Editing notes or other vault files
+- Obsidian plugins
+- Dataview
+- Full Obsidian Bases expression evaluation, including filters, formulas, grouping, and sorting
+- Graph features
+- Live reload
+
+The vault directory index is built at startup. Restart VaultLite after adding or renaming files so the navigator and link index can be refreshed.
+
+## Architecture
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for details about the server, rendering pipeline, front-end modules, configuration flow, security model, and implementation notes.
+
+## Dependencies and build notes
+
+- The local server is based on `tiny_http`.
+- The desktop launcher uses `eframe` 0.30 with the OpenGL renderer and X11 integration enabled.
+- The folder picker uses `tinyfiledialogs` to avoid a heavier asynchronous dialog stack.
+- Optional `eframe` integrations, including the Wayland renderer, web screen reader, and persistence, are disabled.
+- Release builds strip symbols and use thin LTO with a single codegen unit to reduce executable size.
+- The unused direct URL, IDNA, and image dependencies have been removed.
+- `.cargo/config.toml` asks Cargo to prefer dependency versions compatible with the package MSRV when resolving a fresh lockfile. CI builds with the pinned Rust 1.87.0 toolchain.
+- On Windows, the launcher uses the GUI subsystem for normal startup while preserving console diagnostics for CLI use.
+
+## Reporting issues
+
+When opening a bug report, include:
+
+- Your operating system
+- Your VaultLite version
+- Your Rust version, if you built from source
+- The steps needed to reproduce the issue
+
+Do not attach private vault contents. Use a minimal sample vault to demonstrate the problem.
+
+## License
+
+VaultLite is licensed under the [MIT License](LICENSE).
+
